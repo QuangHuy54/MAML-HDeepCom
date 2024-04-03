@@ -5,7 +5,7 @@ import logging
 
 
 # paths
-dataset_dir = '../dataset/'
+dataset_dir = '../drive/MyDrive/dataset_khoaluan/data_RQ1'
 
 if not os.path.exists(dataset_dir):
     raise Exception('Dataset directory not exist.')
