@@ -145,8 +145,9 @@ class MetaTrain(object):
         """
         start training
         """
-        self.train_iter()
-        return self.best_model
+        with torch.backends.cudnn.flags(enabled=False):
+            self.train_iter()
+            return self.best_model
 
     def run_one_batch(self, model, batch, batch_size, criterion):
         """
