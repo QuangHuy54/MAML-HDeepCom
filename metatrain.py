@@ -12,7 +12,7 @@ import config
 import data
 import models
 import eval
-import tqdm
+from tqdm import tqdm
 import learn2learn as l2l
 
 
@@ -35,15 +35,15 @@ class MetaTrain(object):
         self.meta_datasets = {}
         for project in source_projects:
             self.meta_datasets[project]={
-                "support": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'/split/{project}/train.code'),
-                                                ast_path=os.path.join(dataset_dir,f'/split/{project}/train.sbt'),
-                                                nl_path=os.path.join(dataset_dir,f'/split/{project}/train.comment')),
-                "query": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'/split/{project}/valid.code'),
-                                                ast_path=os.path.join(dataset_dir,f'/split/{project}/valid.sbt'),
-                                                nl_path=os.path.join(dataset_dir,f'/split/{project}/valid.comment'))
+                "support": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'split/{project}/train.code'),
+                                                ast_path=os.path.join(dataset_dir,f'split/{project}/train.sbt'),
+                                                nl_path=os.path.join(dataset_dir,f'split/{project}/train.comment')),
+                "query": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'split/{project}/valid.code'),
+                                                ast_path=os.path.join(dataset_dir,f'split/{project}/valid.sbt'),
+                                                nl_path=os.path.join(dataset_dir,f'split/{project}/valid.comment'))
             }
         
-        self.meta_datasets_size = sum([(len(dataset['support']) + len(dataset['query'])) for dataset in self.meta_datasets.values])
+        self.meta_datasets_size = sum([(len(dataset['support']) + len(dataset['query'])) for dataset in self.meta_datasets.values()])
 
         self.meta_dataloaders = {}
         for project in source_projects:
@@ -119,10 +119,10 @@ class MetaTrain(object):
         # ], betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
 
 
-        if config.use_lr_decay:
-            self.lr_scheduler = lr_scheduler.StepLR(self.optimizer,
-                                                    step_size=config.lr_decay_every,
-                                                    gamma=config.lr_decay_rate)
+        # if config.use_lr_decay:
+        #     self.lr_scheduler = lr_scheduler.StepLR(self.optimizer,
+        #                                             step_size=config.lr_decay_every,
+        #                                             gamma=config.lr_decay_rate)
 
         # best score and model(state dict)
         self.min_loss: float = 1000
@@ -196,25 +196,39 @@ class MetaTrain(object):
         self.maml = l2l.algorithms.MAML(self.model, lr=0.1, allow_nograd=True)
         self.optimizer = torch.optim.Adam(self.maml.parameters(), lr=config.learning_rate)
 
-        for epoch in range(config.n_epochs):
+        print("DEBUG[PHONG]: entered train_iter, initialized.")
+
+        for epoch in range(train_steps//valid_every):
             pbar = tqdm(range(valid_every))
             losses = []
             for iteration in pbar:
+                print("DEBUG[PHONG]: entered first iteration.")
                 self.optimizer.zero_grad()
                 for project in self.training_projects:
+                    print("DEBUG[PHONG]: entered first project.")
                     sup_batch, qry_batch = next(iter(self.meta_dataloaders[project]['support'])), next(iter(self.meta_dataloaders[project]['query']))
                     batch_size_sup = len(sup_batch[0][0])
                     batch_size_qry=len(qry_batch[0][0])
 
+                    print("DEBUG[PHONG]: before cloning model.")
                     task_model = self.maml.clone()
+                    print("DEBUG[PHONG]: cloned model.")
                     adaptation_loss=self.run_one_batch(task_model,sup_batch,batch_size_sup,self.criterion)
-                    task_model.adapt(adaptation_loss)
+                    print("DEBUG[PHONG]: end one batch.")
+
+                    # print(adaptation_loss.shape)
+                    # print(adaptation_loss)
+                    # TODO: lỗi ở đây
+                    task_model.adapt(adaptation_loss) 
 
                     query_loss=self.run_one_batch(task_model,qry_batch,batch_size_qry,self.criterion)
+                    print("DEBUG[PHONG]: after run one batch on qry.")
                     query_loss.backward()
-                    losses.append(query_loss)
+                    print("DEBUG[PHONG]: after backward qry-loss.")
+                    losses.append(query_loss.item())
                     
                 self.optimizer.step()
+                print("DEBUG[PHONG]: stepped optimizer.")
                 pbar.set_description('Epoch = %d [loss=%.4f, min=%.4f, max=%.4f] %d' % (epoch, np.mean(losses), np.min(losses), np.max(losses), 1))
 
             # validation

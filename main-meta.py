@@ -28,28 +28,15 @@ def _train(training_projects,validating_project,vocab_file_path=None, model_file
     print('Environments built successfully.\n')
     print('Size of train dataset:', train_instance.meta_datasets_size)
 
-    code_oov_rate = 1 - train_instance.code_vocab_size / train_instance.origin_code_vocab_size
-    nl_oov_rate = 1 - train_instance.nl_vocab_size / train_instance.origin_nl_vocab_size
-
-    print('\nSize of source code vocabulary:', train_instance.origin_code_vocab_size,
-          '->', train_instance.code_vocab_size)
-    print('Source code OOV rate: {:.2f}%'.format(code_oov_rate * 100))
-    print('\nSize of ast of code vocabulary:', train_instance.ast_vocab_size)
-    print('\nSize of code comment vocabulary:', train_instance.origin_nl_vocab_size, '->', train_instance.nl_vocab_size)
-    print('Code comment OOV rate: {:.2f}%'.format(nl_oov_rate * 100))
     config.logger.info('Size of train dataset:{}'.format(train_instance.meta_datasets_size))
-    config.logger.info('Size of source code vocabulary: {} -> {}'.format(
-        train_instance.origin_code_vocab_size, train_instance.code_vocab_size))
-    config.logger.info('Source code OOV rate: {:.2f}%'.format(code_oov_rate * 100))
+    config.logger.info('Size of source code vocabulary: {}'.format(train_instance.code_vocab_size))
     config.logger.info('Size of ast of code vocabulary: {}'.format(train_instance.ast_vocab_size))
-    config.logger.info('Size of code comment vocabulary: {} -> {}'.format(
-        train_instance.origin_nl_vocab_size, train_instance.nl_vocab_size))
-    config.logger.info('Code comment OOV rate: {:.2f}%'.format(nl_oov_rate * 100))
+    config.logger.info('Size of code comment vocabulary: {} '.format(train_instance.nl_vocab_size))
 
     if config.validate_during_train:
         print('\nValidate every', config.validate_every, 'batches and each epoch.')
-        print('Size of validation dataset:', train_instance.eval_instance.dataset_size)
-        config.logger.info('Size of validation dataset: {}'.format(train_instance.eval_instance.dataset_size))
+        #print('Size of validation dataset:', train_instance.eval_instance.dataset_size)
+        #config.logger.info('Size of validation dataset: {}'.format(train_instance.eval_instance.dataset_size))
 
     print('\nStart training......\n')
     config.logger.info('Start training.')
@@ -67,13 +54,19 @@ def _train(training_projects,validating_project,vocab_file_path=None, model_file
     return best_model
 
 
-def _test(model,vocab_file_path):
-    train_instance = train.Train(vocab_file_path=vocab_file_path, model_state_dict=model)
-    best_model_test_dict=
+def _test(model,vocab_file_path,testing_project):
+    dataset_dir = "../dataset/"
+    train_instance = train.Train(vocab_file_path=vocab_file_path, model_state_dict=model,
+                                 code_path=os.path.join(dataset_dir,f'split/{testing_project}/train.code')
+                                ,ast_path=os.path.join(dataset_dir,f'split/{testing_project}/train.sbt'),
+                                nl_path=os.path.join(dataset_dir,f'split/{testing_project}/train.comment'))
+    best_model_test_dict=train_instance.run_train()
     print('\nInitializing the test environments......')
-    test_instance = eval.Test(model)
+    test_instance = eval.Test(best_model_test_dict,
+                              code_path=os.path.join(dataset_dir,f'split/{testing_project}/valid.code')
+                                ,ast_path=os.path.join(dataset_dir,f'split/{testing_project}/valid.sbt'),
+                                nl_path=os.path.join(dataset_dir,f'split/{testing_project}/valid.comment'))
     print('Environments built successfully.\n')
-    print('Size of test dataset:', test_instance.dataset_size)
     config.logger.info('Size of test dataset: {}'.format(test_instance.dataset_size))
 
     config.logger.info('Start Testing.')
@@ -95,12 +88,12 @@ def split_dataset(projects):
 
 
 if __name__ == '__main__':
-    projects = ['saltstack/salt','AppScale/appscale','edx/edx-platform','sympy/sympy','IronLanguages/main','mne-tools/mne-python','JiYou/openstack','openhatch/oh-mainline','cloudera/hue','ahmetcemturan/SFACT','scipy/scipy'] # tạm fix cứng
+    projects = ['saltstack/salt','AppScale/appscale','edx/edx-platform','sympy/sympy','IronLanguages/main','mne-tools/mne-python','JiYou/openstack','openhatch/oh-mainline','cloudera/hue','ahmetcemturan/SFACT','mne-tools/mne-python'] # tạm fix cứng
     training_projects, validating_project, testing_project = split_dataset(projects)
     best_model_dict = _train(training_projects=training_projects, \
                             validating_project=validating_project,\
                             vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path))
-    _test(best_model_dict,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path))
+    _test(best_model_dict,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project)
     
     #  _test(os.path.join('20240511_132257', 'model_valid-loss-3.3848_epoch-14_batch--1.pt'))
 
