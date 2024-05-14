@@ -80,6 +80,6 @@ def _test(model):
 
 
 if __name__ == '__main__':
-    best_model_dict = _train()
-    _test(best_model_dict)
-     #_test(os.path.join('20240511_132257', 'model_valid-loss-3.3848_epoch-14_batch--1.pt'))
+    #best_model_dict = _train()
+    #_test(best_model_dict)
+     _test(os.path.join('20240514_083750', 'best_epoch-1_batch-last.pt'))

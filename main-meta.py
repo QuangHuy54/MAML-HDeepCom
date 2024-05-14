@@ -89,7 +89,11 @@ def split_dataset(projects):
 
 if __name__ == '__main__':
     projects = ['saltstack/salt','AppScale/appscale','edx/edx-platform','sympy/sympy','IronLanguages/main','mne-tools/mne-python','JiYou/openstack','openhatch/oh-mainline','cloudera/hue','ahmetcemturan/SFACT','mne-tools/mne-python'] # tạm fix cứng
-    training_projects, validating_project, testing_project = split_dataset(projects)
+    training_projects=['saltstack/salt','AppScale/appscale','edx/edx-platform','sympy/sympy' ,'JiYou/openstack','IronLanguages/main','openhatch/oh-mainline','mne-tools/mne-python','cloudera/hue']
+    validating_project="ahmetcemturan/SFACT"
+    testing_project="kbengine/kbengine"
+    #training_projects, validating_project, testing_project = split_dataset(projects)
+    config.logger.info(f'validate: {validating_project}, testing: {testing_project}')
     best_model_dict = _train(training_projects=training_projects, \
                             validating_project=validating_project,\
                             vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path))

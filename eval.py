@@ -178,11 +178,12 @@ class Test(object):
         start test
         :return: scores dict, key is name and value is score
         """
-        c_bleu, avg_s_bleu, avg_meteor = self.test_iter()
+        c_bleu, avg_s_bleu, avg_meteor,avg_rouge = self.test_iter()
         scores_dict = {
             'c_bleu': c_bleu,
             's_bleu': avg_s_bleu,
-            'meteor': avg_meteor
+            'meteor': avg_meteor,
+            'rouge_L': avg_rouge
         }
         utils.print_test_scores(scores_dict)
         return scores_dict
@@ -212,9 +213,9 @@ class Test(object):
             candidates = self.translate_indices(batch_sentences)
 
             # measure
-            s_blue_score, meteor_score = utils.measure(batch_size, references=nl_batch, candidates=candidates)
+            s_blue_score, meteor_score,rouge_score = utils.measure(batch_size, references=nl_batch, candidates=candidates)
 
-            return nl_batch, candidates, s_blue_score, meteor_score
+            return nl_batch, candidates, s_blue_score, meteor_score,rouge_score
 
     def test_iter(self):
         """
@@ -226,6 +227,7 @@ class Test(object):
         total_candidates = []
         total_s_bleu = 0
         total_meteor = 0
+        total_rouge=0
         sample_id = 0
 
         out_file = None
@@ -240,9 +242,10 @@ class Test(object):
         for index_batch, batch in enumerate(self.dataloader):
             batch_size = batch[0].shape[1]
 
-            references, candidates, s_blue_score, meteor_score = self.test_one_batch(batch, batch_size)
+            references, candidates, s_blue_score, meteor_score,rouge_score = self.test_one_batch(batch, batch_size)
             total_s_bleu += s_blue_score
             total_meteor += meteor_score
+            total_rouge +=rouge_score
             total_references += references
             total_candidates += candidates
 
@@ -250,7 +253,7 @@ class Test(object):
                 cur_time = time.time()
                 utils.print_test_progress(start_time=start_time, cur_time=cur_time, index_batch=index_batch,
                                           batch_size=batch_size, dataset_size=self.dataset_size,
-                                          batch_s_bleu=s_blue_score, batch_meteor=meteor_score)
+                                          batch_s_bleu=s_blue_score, batch_meteor=meteor_score,batch_rouge=rouge_score)
 
             if config.save_test_details:
                 for index in range(len(references)):
@@ -265,15 +268,16 @@ class Test(object):
 
         avg_s_bleu = total_s_bleu / self.dataset_size
         avg_meteor = total_meteor / self.dataset_size
-
+        avg_rouge=total_rouge/self.dataset_size
         if out_file:
             out_file.write('c_bleu: ' + str(c_bleu) + '\n')
             out_file.write('s_bleu: ' + str(avg_s_bleu) + '\n')
             out_file.write('meteor: ' + str(avg_meteor) + '\n')
+            out_file.write('rouge_L: ' + str(avg_rouge) + '\n')
             out_file.flush()
             out_file.close()
 
-        return c_bleu, avg_s_bleu, avg_meteor
+        return c_bleu, avg_s_bleu, avg_meteor,avg_rouge
 
     def greedy_decode(self, batch_size, code_outputs: torch.Tensor,
                       ast_outputs: torch.Tensor, decoder_hidden: torch.Tensor):

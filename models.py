@@ -231,7 +231,7 @@ class Model(nn.Module):
             self.decoder = self.decoder.cuda()
 
         if model_file_path:
-            state = torch.load(model_file_path)
+            state = torch.load(model_file_path,map_location=torch.device('cuda' if config.use_cuda else 'cpu'))
             self.set_state_dict(state)
 
         if model_state_dict:

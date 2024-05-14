@@ -6,6 +6,7 @@ import os
 import pickle
 import numpy as np
 import nltk
+from rouge import Rouge
 
 import config
 
@@ -479,6 +480,7 @@ def measure(batch_size, references, candidates) -> (float, float):
     """
     total_s_bleu = 0
     total_meteor = 0
+    total_rouge=0
 
     for index_batch in range(batch_size):
         reference = references[index_batch]
@@ -492,7 +494,10 @@ def measure(batch_size, references, candidates) -> (float, float):
         meteor = meteor_score(reference, candidate)
         total_meteor += meteor
 
-    return total_s_bleu, total_meteor
+        #rouge-L
+        rouge_score=rouge(reference,candidate)
+        total_rouge+=rouge_score
+    return total_s_bleu, total_meteor,total_rouge
 
 
 def sentence_bleu_score(reference, candidate) -> float:
@@ -522,13 +527,15 @@ def meteor_score(reference, candidate):
     :param candidate:
     :return:
     """
-    return nltk.translate.meteor_score.single_meteor_score(reference=[' '.join(reference)],
-                                                           hypothesis=[' '.join(candidate)])
+    return nltk.translate.meteor_score.single_meteor_score(reference,
+                                                           candidate)
 
 
-def rouge():
-    pass
-
+def rouge(reference, candidate):
+    rouge = Rouge(metrics=['rouge-l'], max_n=4)
+    result=rouge.get_scores(' '.join(candidate), ' '.join(reference))
+    return result['rouge-l']['f']
+    
 
 def cider():
     pass
@@ -539,12 +546,13 @@ def ir_score():
     pass
 
 
-def print_test_progress(start_time, cur_time, index_batch, batch_size, dataset_size, batch_s_bleu, batch_meteor):
+def print_test_progress(start_time, cur_time, index_batch, batch_size, dataset_size, batch_s_bleu, batch_meteor,batch_rouge):
     spend = cur_time - start_time
     spend_h, spend_min, spend_s, spend_ms = to_time(spend)
 
     avg_s_bleu = batch_s_bleu / batch_size
     avg_meteor = batch_meteor / batch_size
+    avg_rouge=batch_rouge/batch_size
 
     n_iter = (dataset_size + batch_size - 1) // batch_size
     len_iter = len(str(n_iter))
@@ -561,8 +569,8 @@ def print_test_progress(start_time, cur_time, index_batch, batch_size, dataset_s
           (len_iter, index_batch, len_iter, n_iter), end='')
     print('\033[0;32mpercent complete\033[0m: {:6.2f}%, '.format(
         percent_complete), end='')
-    print('\033[0;31mavg s-bleu\033[0m: {:.4f}, \033[0;31mavg meteor\033[0m: {:.4f}'.format(
-        avg_s_bleu, avg_meteor))
+    print('\033[0;31mavg s-bleu\033[0m: {:.4f}, \033[0;31mavg meteor\033[0m: {:.4f}, \033[0;31mavg rouge\033[0m: {:.4f}'.format(
+        avg_s_bleu, avg_meteor,avg_rouge))
 
 
 def print_test_scores(scores_dict):
