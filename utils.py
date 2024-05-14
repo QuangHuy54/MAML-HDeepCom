@@ -522,8 +522,8 @@ def meteor_score(reference, candidate):
     :param candidate:
     :return:
     """
-    return nltk.translate.meteor_score.single_meteor_score(reference=' '.join(reference),
-                                                           hypothesis=' '.join(candidate))
+    return nltk.translate.meteor_score.single_meteor_score(reference=[' '.join(reference)],
+                                                           hypothesis=[' '.join(candidate)])
 
 
 def rouge():

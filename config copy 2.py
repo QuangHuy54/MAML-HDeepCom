@@ -5,24 +5,24 @@ import logging
 
 
 # paths
-dataset_dir = '../dataset/processed/'
+dataset_dir = '../dataset/data-v1/'
 
 if not os.path.exists(dataset_dir):
     raise Exception('Dataset directory not exist.')
 
-train_code_path = os.path.join(dataset_dir, 'train.code')
-train_sbt_path = os.path.join(dataset_dir, 'train.sbt')
-train_nl_path = os.path.join(dataset_dir, 'train.comment')
+train_code_path = os.path.join(dataset_dir, 'train/train.token.code')
+train_sbt_path = os.path.join(dataset_dir, 'train/train.token.sbt')
+train_nl_path = os.path.join(dataset_dir, 'train/train.token.nl')
 train_ast_path = os.path.join(dataset_dir, 'train/train_ast.json')
 
-valid_code_path = os.path.join(dataset_dir, 'valid.code')
-valid_sbt_path = os.path.join(dataset_dir, 'valid.sbt')
-valid_nl_path = os.path.join(dataset_dir, 'valid.comment')
+valid_code_path = os.path.join(dataset_dir, 'valid/valid.token.code')
+valid_sbt_path = os.path.join(dataset_dir, 'valid/valid.token.sbt')
+valid_nl_path = os.path.join(dataset_dir, 'valid/valid.token.nl')
 valid_ast_path = os.path.join(dataset_dir, 'valid/valid_ast.json')
 
-test_code_path = os.path.join(dataset_dir, 'test.code')
-test_sbt_path = os.path.join(dataset_dir, 'test.sbt')
-test_nl_path = os.path.join(dataset_dir, 'test.comment')
+test_code_path = os.path.join(dataset_dir, 'test/test.token.code')
+test_sbt_path = os.path.join(dataset_dir, 'test/test.token.sbt')
+test_nl_path = os.path.join(dataset_dir, 'test/test.token.nl')
 test_ast_path = os.path.join(dataset_dir, 'test/test_ast.json')
 
 model_dir = 'model/'
@@ -31,14 +31,14 @@ best_model_path = 'best_model.pt'
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
 
-vocab_dir = 'vocab/'
+vocab_dir = '../dataset/data-v1/'
 code_vocab_path = 'code_vocab.pk'
 ast_vocab_path = 'ast_vocab.pk'
 nl_vocab_path = 'nl_vocab.pk'
 
-code_vocab_txt_path = 'code_vocab.txt'
-ast_vocab_txt_path = 'ast_vocab.txt'
-nl_vocab_txt_path = 'nl_vocab.txt'
+code_vocab_txt_path = 'vocab.code'
+ast_vocab_txt_path = 'vocab.sbt'
+nl_vocab_txt_path = 'vocab.nl'
 
 if not os.path.exists(vocab_dir):
     os.makedirs(vocab_dir)

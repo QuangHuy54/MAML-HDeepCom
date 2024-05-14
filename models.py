@@ -307,3 +307,4 @@ class Model(nn.Module):
         self.ast_encoder.load_state_dict(state_dict["ast_encoder"])
         self.reduce_hidden.load_state_dict(state_dict["reduce_hidden"])
         self.decoder.load_state_dict(state_dict["decoder"])
+

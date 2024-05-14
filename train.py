@@ -16,7 +16,9 @@ import eval
 
 class Train(object):
 
-    def __init__(self, vocab_file_path=None, model_file_path=None):
+    def __init__(self, vocab_file_path=None, model_file_path=None,model_state_dict=None,code_path=config.train_code_path,
+                                                 ast_path=config.train_sbt_path,
+                                                 nl_path=config.train_nl_path):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -24,9 +26,9 @@ class Train(object):
         """
 
         # dataset
-        self.train_dataset = data.CodePtrDataset(code_path=config.train_code_path,
-                                                 ast_path=config.train_sbt_path,
-                                                 nl_path=config.train_nl_path)
+        self.train_dataset = data.CodePtrDataset(code_path,
+                                                 ast_path,
+                                                 nl_path)
         self.train_dataset_size = len(self.train_dataset)
         self.train_dataloader = DataLoader(dataset=self.train_dataset,
                                            batch_size=config.batch_size,
@@ -79,7 +81,8 @@ class Train(object):
         self.model = models.Model(code_vocab_size=self.code_vocab_size,
                                   ast_vocab_size=self.ast_vocab_size,
                                   nl_vocab_size=self.nl_vocab_size,
-                                  model_file_path=model_file_path)
+                                  model_file_path=model_file_path,
+                                  model_state_dict=model_state_dict)
         self.params = list(self.model.code_encoder.parameters()) + \
             list(self.model.ast_encoder.parameters()) + \
             list(self.model.reduce_hidden.parameters()) + \
@@ -283,3 +286,4 @@ class Train(object):
 
         if config.use_early_stopping:
             self.early_stopping(loss)
+

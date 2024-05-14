@@ -13,7 +13,8 @@ import config
 
 class Eval(object):
 
-    def __init__(self, model):
+    def __init__(self, model,code_path=config.valid_code_path,ast_path=config.valid_sbt_path,
+                                           nl_path=config.valid_nl_path):
 
         # vocabulary
         self.code_vocab = utils.load_vocab_pk(config.code_vocab_path)
@@ -24,9 +25,9 @@ class Eval(object):
         self.nl_vocab_size = len(self.nl_vocab)
 
         # dataset
-        self.dataset = data.CodePtrDataset(code_path=config.valid_code_path,
-                                           ast_path=config.valid_sbt_path,
-                                           nl_path=config.valid_nl_path)
+        self.dataset = data.CodePtrDataset(code_path,
+                                           ast_path,
+                                           nl_path)
         self.dataset_size = len(self.dataset)
         self.dataloader = DataLoader(dataset=self.dataset,
                                      batch_size=config.eval_batch_size,
@@ -130,7 +131,9 @@ class BeamNode(object):
 
 class Test(object):
 
-    def __init__(self, model):
+    def __init__(self, model,code_path=config.test_code_path,
+                                ast_path=config.test_sbt_path,
+                                nl_path=config.test_nl_path):
 
         # vocabulary
         self.code_vocab = utils.load_vocab_pk(config.code_vocab_path)
@@ -140,10 +143,9 @@ class Test(object):
         self.nl_vocab = utils.load_vocab_pk(config.nl_vocab_path)
         self.nl_vocab_size = len(self.nl_vocab)
 
-        # dataset
-        self.dataset = data.CodePtrDataset(code_path=config.test_code_path,
-                                           ast_path=config.test_sbt_path,
-                                           nl_path=config.test_nl_path)
+        self.dataset = data.CodePtrDataset(code_path,
+                                           ast_path,
+                                           nl_path)
         self.dataset_size = len(self.dataset)
         self.dataloader = DataLoader(dataset=self.dataset,
                                      batch_size=config.test_batch_size,
@@ -152,6 +154,8 @@ class Test(object):
                                                                                       ast_vocab=self.ast_vocab,
                                                                                       nl_vocab=self.nl_vocab,
                                                                                       raw_nl=True))
+
+        
 
         # model
         if isinstance(model, str):

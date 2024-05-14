@@ -1,11 +1,12 @@
 import os
 
 import config
-import train
+import metatrain
 import eval
+import random
+import train
 
-
-def _train(vocab_file_path=None, model_file_path=None):
+def _train(training_projects,validating_project,vocab_file_path=None, model_file_path=None):
     print('\nStarting the training process......\n')
 
     if vocab_file_path:
@@ -23,9 +24,9 @@ def _train(vocab_file_path=None, model_file_path=None):
         print('Model will be created by program.')
 
     print('\nInitializing the training environments......\n')
-    train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model_file_path)
+    train_instance = metatrain.MetaTrain(training_projects=training_projects,validating_project=validating_project,vocab_file_path=vocab_file_path, model_file_path=model_file_path)
     print('Environments built successfully.\n')
-    print('Size of train dataset:', train_instance.train_dataset_size)
+    print('Size of train dataset:', train_instance.meta_datasets_size)
 
     code_oov_rate = 1 - train_instance.code_vocab_size / train_instance.origin_code_vocab_size
     nl_oov_rate = 1 - train_instance.nl_vocab_size / train_instance.origin_nl_vocab_size
@@ -36,7 +37,7 @@ def _train(vocab_file_path=None, model_file_path=None):
     print('\nSize of ast of code vocabulary:', train_instance.ast_vocab_size)
     print('\nSize of code comment vocabulary:', train_instance.origin_nl_vocab_size, '->', train_instance.nl_vocab_size)
     print('Code comment OOV rate: {:.2f}%'.format(nl_oov_rate * 100))
-    config.logger.info('Size of train dataset:{}'.format(train_instance.train_dataset_size))
+    config.logger.info('Size of train dataset:{}'.format(train_instance.meta_datasets_size))
     config.logger.info('Size of source code vocabulary: {} -> {}'.format(
         train_instance.origin_code_vocab_size, train_instance.code_vocab_size))
     config.logger.info('Source code OOV rate: {:.2f}%'.format(code_oov_rate * 100))
@@ -66,7 +67,9 @@ def _train(vocab_file_path=None, model_file_path=None):
     return best_model
 
 
-def _test(model):
+def _test(model,vocab_file_path):
+    train_instance = train.Train(vocab_file_path=vocab_file_path, model_state_dict=model)
+    best_model_test_dict=
     print('\nInitializing the test environments......')
     test_instance = eval.Test(model)
     print('Environments built successfully.\n')
@@ -79,7 +82,25 @@ def _test(model):
     print('Testing is done.')
 
 
+def split_dataset(projects):
+    random.seed(1)
+
+    testing_project=random.choice(projects)
+    projects.remove(testing_project)
+    validating_project=random.choice(projects)
+    projects.remove(validating_project)
+    training_projects = projects
+
+    return (training_projects, validating_project, testing_project)
+
+
 if __name__ == '__main__':
-    best_model_dict = _train()
-    _test(best_model_dict)
-     #_test(os.path.join('20240511_132257', 'model_valid-loss-3.3848_epoch-14_batch--1.pt'))
+    projects = ['saltstack/salt','AppScale/appscale','edx/edx-platform','sympy/sympy','IronLanguages/main','mne-tools/mne-python','JiYou/openstack','openhatch/oh-mainline','cloudera/hue','ahmetcemturan/SFACT','scipy/scipy'] # tạm fix cứng
+    training_projects, validating_project, testing_project = split_dataset(projects)
+    best_model_dict = _train(training_projects=training_projects, \
+                            validating_project=validating_project,\
+                            vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path))
+    _test(best_model_dict,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path))
+    
+    #  _test(os.path.join('20240511_132257', 'model_valid-loss-3.3848_epoch-14_batch--1.pt'))
+
