@@ -18,7 +18,10 @@ class Train(object):
 
     def __init__(self, vocab_file_path=None, model_file_path=None,model_state_dict=None,code_path=config.train_code_path,
                                                  ast_path=config.train_sbt_path,
-                                                 nl_path=config.train_nl_path):
+                                                 nl_path=config.train_nl_path,
+                                                 code_valid_path=config.valid_code_path,
+                                                 ast_valid_path=config.valid_sbt_path,
+                                                 nl_valid_path=config.valid_nl_path):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -108,7 +111,7 @@ class Train(object):
         self.best_epoch_batch: (int, int) = (None, None)
 
         # eval instance
-        self.eval_instance = eval.Eval(self.get_cur_state_dict())
+        self.eval_instance = eval.Eval(self.get_cur_state_dict(),code_path=code_valid_path,ast_path=ast_valid_path,nl_path=nl_valid_path)
 
         # early stopping
         self.early_stopping = None
