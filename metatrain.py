@@ -204,7 +204,7 @@ class MetaTrain(object):
             losses = []
             for iteration in pbar:
                 print("DEBUG[PHONG]: entered first iteration.")
-                self.optimizer.zero_grad()
+                self.optimizer.zero_grad() 
                 for project in self.training_projects:
                     print("DEBUG[PHONG]: entered first project.")
                     sup_batch, qry_batch = next(iter(self.meta_dataloaders[project]['support'])), next(iter(self.meta_dataloaders[project]['query']))
