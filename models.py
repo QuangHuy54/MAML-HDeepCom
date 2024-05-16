@@ -65,7 +65,7 @@ class Encoder(nn.Module):
 
         # vocab_size: config.code_vocab_size for code encoder, size of sbt vocabulary for ast encoder
         self.embedding = nn.Embedding(vocab_size, config.embedding_dim)
-        self.gru = nn.LSTM(config.embedding_dim, self.hidden_size,bidirectional=True)
+        self.gru = nn.GRU(config.embedding_dim, self.hidden_size,bidirectional=True)
 
         init_wt_normal(self.embedding.weight)
         init_rnn_wt(self.gru)
