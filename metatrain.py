@@ -194,7 +194,7 @@ class MetaTrain(object):
 
         self.criterion = nn.NLLLoss(ignore_index=utils.get_pad_index(self.nl_vocab))
 
-        self.maml = l2l.algorithms.MAML(self.model, lr=0.1, allow_nograd=True)
+        self.maml = l2l.algorithms.MAML(self.model, lr=0.1)
         self.optimizer = torch.optim.Adam(self.maml.parameters(), lr=config.learning_rate)
 
         print("DEBUG[PHONG]: entered train_iter, initialized.")
@@ -227,7 +227,7 @@ class MetaTrain(object):
                     query_loss.backward()
                     print("DEBUG[PHONG]: after backward qry-loss.")
                     losses.append(query_loss.item())
-                    
+                torch.nn.utils.clip_grad_norm_(self.params, 5)
                 self.optimizer.step()
                 print("DEBUG[PHONG]: stepped optimizer.")
                 pbar.set_description('Epoch = %d [loss=%.4f, min=%.4f, max=%.4f] %d' % (epoch, np.mean(losses), np.min(losses), np.max(losses), 1))
