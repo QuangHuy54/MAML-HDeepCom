@@ -99,7 +99,7 @@ class Train(object):
         #     {'params': self.model.decoder.parameters(), 'lr': config.decoder_lr},
             
         # ], betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
-        self.optimizer=Adam(self.model.parameter(),lr=config.learning_rate)
+        self.optimizer=Adam(self.model.parameters(),lr=config.learning_rate)
         if config.use_lr_decay:
             self.lr_scheduler = lr_scheduler.StepLR(self.optimizer,
                                                     step_size=config.lr_decay_every,
