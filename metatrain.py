@@ -194,9 +194,12 @@ class MetaTrain(object):
 
         self.criterion = nn.NLLLoss(ignore_index=utils.get_pad_index(self.nl_vocab))
 
-        self.maml = l2l.algorithms.MAML(self.model, lr=0.1)
+        self.maml = l2l.algorithms.MAML(self.model, lr=0.1, allow_nograd=True)
         self.optimizer = torch.optim.Adam(self.maml.parameters(), lr=config.learning_rate)
-
+        if config.use_lr_decay:
+            self.lr_scheduler = lr_scheduler.StepLR(self.optimizer,
+                                                    step_size=config.lr_decay_every,
+                                                    gamma=config.lr_decay_rate)
         print("DEBUG[PHONG]: entered train_iter, initialized.")
 
         for epoch in range(train_steps//valid_every):
@@ -231,7 +234,8 @@ class MetaTrain(object):
                 self.optimizer.step()
                 print("DEBUG[PHONG]: stepped optimizer.")
                 pbar.set_description('Epoch = %d [loss=%.4f, min=%.4f, max=%.4f] %d' % (epoch, np.mean(losses), np.min(losses), np.max(losses), 1))
-
+            if config.use_lr_decay:
+                self.lr_scheduler.step()
             # validation
             if epoch >= eval_start:
                 self.valid_state_dict(state_dict=self.get_cur_state_dict(), epoch=epoch, batch=1)
