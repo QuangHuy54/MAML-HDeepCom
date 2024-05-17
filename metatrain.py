@@ -27,20 +27,19 @@ class MetaTrain(object):
 
         self.training_projects = training_projects
         self.validating_project = validating_project
-        self.config = config
         source_projects = training_projects + [validating_project]
 
         # dataset
-        dataset_dir = "../dataset/"
+        dataset_dir = "../dataset/split/"
         self.meta_datasets = {}
         for project in source_projects:
             self.meta_datasets[project]={
-                "support": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'split/{project}/train.code'),
-                                                ast_path=os.path.join(dataset_dir,f'split/{project}/train.sbt'),
-                                                nl_path=os.path.join(dataset_dir,f'split/{project}/train.comment')),
-                "query": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'split/{project}/valid.code'),
-                                                ast_path=os.path.join(dataset_dir,f'split/{project}/valid.sbt'),
-                                                nl_path=os.path.join(dataset_dir,f'split/{project}/valid.comment'))
+                "support": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/train.code'),
+                                                ast_path=os.path.join(dataset_dir,f'{project}/train.sbt'),
+                                                nl_path=os.path.join(dataset_dir,f'{project}/train.comment')),
+                "query": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/valid.code'),
+                                                ast_path=os.path.join(dataset_dir,f'{project}/valid.sbt'),
+                                                nl_path=os.path.join(dataset_dir,f'{project}/valid.comment'))
             }
         
         self.meta_datasets_size = sum([(len(dataset['support']) + len(dataset['query'])) for dataset in self.meta_datasets.values()])
@@ -100,29 +99,30 @@ class MetaTrain(object):
         self.nl_vocab_size = len(self.nl_vocab)
 
         # model
-        self.model = models.Model(code_vocab_size=self.code_vocab_size,
+        model = models.Model(code_vocab_size=self.code_vocab_size,
                                   ast_vocab_size=self.ast_vocab_size,
                                   nl_vocab_size=self.nl_vocab_size,
                                   model_file_path=model_file_path)
+        self.model=l2l.algorithms.MAML(model, lr=0.1, allow_nograd=True)
         self.params = list(self.model.code_encoder.parameters()) + \
             list(self.model.ast_encoder.parameters()) + \
             list(self.model.reduce_hidden.parameters()) + \
             list(self.model.decoder.parameters())
 
         # optimizer
-        # self.optimizer = Adam([
-        #     {'params': self.model.code_encoder.parameters(), 'lr': config.code_encoder_lr},
-        #     {'params': self.model.ast_encoder.parameters(), 'lr': config.ast_encoder_lr},
-        #     {'params': self.model.reduce_hidden.parameters(), 'lr': config.reduce_hidden_lr},
-        #     {'params': self.model.decoder.parameters(), 'lr': config.decoder_lr},
+        self.optimizer = Adam([
+            {'params': self.model.code_encoder.parameters(), 'lr': config.code_encoder_lr},
+            {'params': self.model.ast_encoder.parameters(), 'lr': config.ast_encoder_lr},
+            {'params': self.model.reduce_hidden.parameters(), 'lr': config.reduce_hidden_lr},
+            {'params': self.model.decoder.parameters(), 'lr': config.decoder_lr},
             
-        # ], betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
+        ], betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
 
 
-        # if config.use_lr_decay:
-        #     self.lr_scheduler = lr_scheduler.StepLR(self.optimizer,
-        #                                             step_size=config.lr_decay_every,
-        #                                             gamma=config.lr_decay_rate)
+        if config.use_lr_decay:
+            self.lr_scheduler = lr_scheduler.StepLR(self.optimizer,
+                                                    step_size=config.lr_decay_every,
+                                                    gamma=config.lr_decay_rate)
 
         # best score and model(state dict)
         self.min_loss: float = 1000
@@ -190,16 +190,15 @@ class MetaTrain(object):
     def train_iter(self,train_steps=12000, inner_train_steps=4, 
               valid_steps=200, inner_valid_steps=4, 
               valid_every=2, eval_start=0, early_stop=50):
-        best_losses= 0
 
         self.criterion = nn.NLLLoss(ignore_index=utils.get_pad_index(self.nl_vocab))
 
-        self.maml = l2l.algorithms.MAML(self.model, lr=0.1, allow_nograd=True)
-        self.optimizer = torch.optim.Adam(self.maml.parameters(), lr=config.learning_rate)
-        if config.use_lr_decay:
-            self.lr_scheduler = lr_scheduler.StepLR(self.optimizer,
-                                                    step_size=config.lr_decay_every,
-                                                    gamma=config.lr_decay_rate)
+        #self.maml = l2l.algorithms.MAML(self.model, lr=0.1, allow_nograd=True)
+        #self.optimizer = torch.optim.Adam(self.model.parameters(), lr=config.learning_rate)
+        # if config.use_lr_decay:
+        #     self.lr_scheduler = lr_scheduler.StepLR(self.optimizer,
+        #                                             step_size=config.lr_decay_every,
+        #                                             gamma=config.lr_decay_rate)
         print("DEBUG[PHONG]: entered train_iter, initialized.")
 
         for epoch in range(train_steps//valid_every):
@@ -215,7 +214,7 @@ class MetaTrain(object):
                     batch_size_qry=len(qry_batch[0][0])
 
                     print("DEBUG[PHONG]: before cloning model.")
-                    task_model = self.maml.clone()
+                    task_model = self.model.clone()
                     print("DEBUG[PHONG]: cloned model.")
                     adaptation_loss=self.run_one_batch(task_model,sup_batch,batch_size_sup,self.criterion)
                     print("DEBUG[PHONG]: end one batch.")
@@ -285,11 +284,11 @@ class MetaTrain(object):
         sup_batch, qry_batch = next(iter(self.meta_dataloaders[self.validating_project]['support'])), next(iter(self.meta_dataloaders[self.validating_project]['query']))
         batch_size_sup = len(sup_batch[0][0])
         batch_size_qry=len(qry_batch[0][0])
-        task_model = self.maml.clone()
+        task_model = self.model.clone()
         adaptation_loss=self.run_one_batch(task_model,sup_batch,batch_size_sup,self.criterion)
         task_model.adapt(adaptation_loss)
         loss=self.eval_one_batch(task_model,qry_batch,batch_size_qry,self.criterion)
-
+        
         if config.save_valid_model:
             model_name = 'meta_model_valid-loss-{:.4f}_epoch-{}_batch-{}.pt'.format(loss, epoch, batch)
             save_thread = threading.Thread(target=self.save_model, args=(model_name, state_dict))

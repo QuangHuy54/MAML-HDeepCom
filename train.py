@@ -289,4 +289,3 @@ class Train(object):
 
         if config.use_early_stopping:
             self.early_stopping(loss)
-
