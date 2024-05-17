@@ -85,8 +85,8 @@ save_test_details = True
 
 
 # limitations
-max_code_length = 480
-max_nl_length = 20
+max_code_length = 443
+max_nl_length = 19
 min_nl_length = 4
 max_decode_steps = 30
 early_stopping_patience = 20
@@ -94,7 +94,7 @@ early_stopping_patience = 20
 
 # hyperparameters
 vocab_min_count = 5
-code_vocab_size = 30000  # 30000
+code_vocab_size = 50000  # 30000
 nl_vocab_size = 30000    # 30000
 
 learning_rate=1e-4
