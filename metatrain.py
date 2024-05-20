@@ -218,7 +218,8 @@ class MetaTrain(object):
             support_iterators = {project: iter(self.meta_dataloaders[project]['support']) for project in self.training_projects}
             query_iterators = {project: iter(self.meta_dataloaders[project]['query']) for project in self.training_projects}
             num_iteration=max([len(self.meta_dataloaders[project]['support']) for project in self.training_projects ])
-            
+            print(f'[DEBUG] Num iteration: {num_iteration} \n')
+
             for iteration in range(num_iteration): # outer loop
                 losses = []
                 self.optimizer.zero_grad() 
@@ -235,7 +236,7 @@ class MetaTrain(object):
                         qry_batch = next(query_iterators[project])
                     batch_size_sup = len(sup_batch[0][0])
                     batch_size_qry=len(qry_batch[0][0])
-
+                    print(f'[DEBUG] Batch size sup: {batch_size_sup}, Batch size query: {batch_size_qry} \n')
                     task_model = self.model.clone()
                     for _ in range(inner_train_steps):
                         adaptation_loss=self.run_one_batch(task_model,sup_batch,batch_size_sup,self.criterion)
@@ -246,7 +247,7 @@ class MetaTrain(object):
                     losses.append(query_loss.item())
                 torch.nn.utils.clip_grad_norm_(self.params, 5)
                 self.optimizer.step()
-                pbar.set_description('Epoch = %d, iteration = %d, [loss=%.4f, min=%.4f, max=%.4f] %d' % (epoch, iteration, np.mean(losses), np.min(losses), np.max(losses), 1))
+                pbar.set_description('Epoch = %d, iteration = %d, [loss=%.4f, min=%.4f, max=%.4f] %d \n' % (epoch, iteration, np.mean(losses), np.min(losses), np.max(losses), 1))
             if config.use_lr_decay:
                 self.lr_scheduler.step()
             # validation
