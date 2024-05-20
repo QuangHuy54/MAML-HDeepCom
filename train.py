@@ -21,7 +21,7 @@ class Train(object):
                                                  nl_path=config.train_nl_path,
                                                  code_valid_path=config.valid_code_path,
                                                  ast_valid_path=config.valid_sbt_path,
-                                                 nl_valid_path=config.valid_nl_path):
+                                                 nl_valid_path=config.valid_nl_path,batch_size=config.batch_size):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -34,7 +34,7 @@ class Train(object):
                                                  nl_path)
         self.train_dataset_size = len(self.train_dataset)
         self.train_dataloader = DataLoader(dataset=self.train_dataset,
-                                           batch_size=config.batch_size,
+                                           batch_size=batch_size,
                                            shuffle=True,
                                            collate_fn=lambda *args: utils.unsort_collate_fn(args,
                                                                                             code_vocab=self.code_vocab,

@@ -45,14 +45,27 @@ class MetaTrain(object):
         self.meta_datasets_size = sum([(len(dataset['support']) + len(dataset['query'])) for dataset in self.meta_datasets.values()])
 
         self.meta_dataloaders = {}
-        for project in source_projects:
+        for project in training_projects:
             self.meta_dataloaders[project] = {
-                'support': DataLoader(dataset=self.meta_datasets[project]['support'], batch_size=config.batch_size, shuffle=True,
+                'support': DataLoader(dataset=self.meta_datasets[project]['support'], batch_size=config.support_bach_size, shuffle=True,
                                            collate_fn=lambda *args: utils.unsort_collate_fn(args,
                                                                                             code_vocab=self.code_vocab,
                                                                                             ast_vocab=self.ast_vocab,
                                                                                             nl_vocab=self.nl_vocab)),
-                'query': DataLoader(dataset=self.meta_datasets[project]['query'], batch_size=config.test_batch_size, shuffle=True, # đã sửa từ batch_size thành test_batch_size
+                'query': DataLoader(dataset=self.meta_datasets[project]['query'], batch_size=config.query_batch_size, shuffle=True, # đã sửa từ batch_size thành test_batch_size
+                                           collate_fn=lambda *args: utils.unsort_collate_fn(args,
+                                                                                            code_vocab=self.code_vocab,
+                                                                                            ast_vocab=self.ast_vocab,
+                                                                                            nl_vocab=self.nl_vocab))
+            }
+        
+        self.meta_dataloaders[validating_project] = {
+                'support': DataLoader(dataset=self.meta_datasets[validating_project]['support'], batch_size=config.support_bach_size, shuffle=False,
+                                           collate_fn=lambda *args: utils.unsort_collate_fn(args,
+                                                                                            code_vocab=self.code_vocab,
+                                                                                            ast_vocab=self.ast_vocab,
+                                                                                            nl_vocab=self.nl_vocab)),
+                'query': DataLoader(dataset=self.meta_datasets[validating_project]['query'], batch_size=config.query_batch_size, shuffle=False,
                                            collate_fn=lambda *args: utils.unsort_collate_fn(args,
                                                                                             code_vocab=self.code_vocab,
                                                                                             ast_vocab=self.ast_vocab,
@@ -189,7 +202,7 @@ class MetaTrain(object):
 
     def train_iter(self,train_steps=12000, inner_train_steps=4, 
               valid_steps=200, inner_valid_steps=4, 
-              valid_every=2, eval_start=0, early_stop=50):
+              valid_every=5, eval_start=0, early_stop=50):
 
         self.criterion = nn.NLLLoss(ignore_index=utils.get_pad_index(self.nl_vocab))
 
@@ -199,39 +212,40 @@ class MetaTrain(object):
         #     self.lr_scheduler = lr_scheduler.StepLR(self.optimizer,
         #                                             step_size=config.lr_decay_every,
         #                                             gamma=config.lr_decay_rate)
-        print("DEBUG[PHONG]: entered train_iter, initialized.")
 
         for epoch in range(train_steps//valid_every):
             pbar = tqdm(range(valid_every))
             losses = []
-            for iteration in pbar:
-                print("DEBUG[PHONG]: entered first iteration.")
+            support_iterators = {project: iter(self.meta_dataloaders[project]['support']) for project in self.training_projects}
+            query_iterators = {project: iter(self.meta_dataloaders[project]['query']) for project in self.training_projects}
+            num_iteration=max([len(iter_project) for iter_project in support_iterators.values()])
+            
+            for iteration in range(num_iteration): # outer loop
                 self.optimizer.zero_grad() 
-                for project in self.training_projects:
-                    print("DEBUG[PHONG]: entered first project.")
-                    sup_batch, qry_batch = next(iter(self.meta_dataloaders[project]['support'])), next(iter(self.meta_dataloaders[project]['query']))
+                for project in self.training_projects: # inner loop
+                    # sup_batch, qry_batch = next(iter(self.meta_dataloaders[project]['support'])), next(iter(self.meta_dataloaders[project]['query']))
+                    try:
+                        sup_batch = next(support_iterators[project])
+                        qry_batch = next(query_iterators[project])
+                    except StopIteration:
+                        # Reset iterators if StopIteration is encountered
+                        support_iterators[project] = iter(self.meta_dataloaders[project]['support'])
+                        query_iterators[project] = iter(self.meta_dataloaders[project]['query'])
+                        sup_batch = next(support_iterators[project])
+                        qry_batch = next(query_iterators[project])
                     batch_size_sup = len(sup_batch[0][0])
                     batch_size_qry=len(qry_batch[0][0])
 
-                    print("DEBUG[PHONG]: before cloning model.")
                     task_model = self.model.clone()
-                    print("DEBUG[PHONG]: cloned model.")
-                    adaptation_loss=self.run_one_batch(task_model,sup_batch,batch_size_sup,self.criterion)
-                    print("DEBUG[PHONG]: end one batch.")
-
-                    # print(adaptation_loss.shape)
-                    # print(adaptation_loss)
-                    # TODO: lỗi ở đây
-                    task_model.adapt(adaptation_loss) 
+                    for _ in range(inner_train_steps):
+                        adaptation_loss=self.run_one_batch(task_model,sup_batch,batch_size_sup,self.criterion)
+                        task_model.adapt(adaptation_loss) 
 
                     query_loss=self.run_one_batch(task_model,qry_batch,batch_size_qry,self.criterion)
-                    print("DEBUG[PHONG]: after run one batch on qry.")
                     query_loss.backward()
-                    print("DEBUG[PHONG]: after backward qry-loss.")
                     losses.append(query_loss.item())
                 torch.nn.utils.clip_grad_norm_(self.params, 5)
                 self.optimizer.step()
-                print("DEBUG[PHONG]: stepped optimizer.")
                 pbar.set_description('Epoch = %d [loss=%.4f, min=%.4f, max=%.4f] %d' % (epoch, np.mean(losses), np.min(losses), np.max(losses), 1))
             if config.use_lr_decay:
                 self.lr_scheduler.step()
@@ -281,14 +295,20 @@ class MetaTrain(object):
         return state_dict
 
     def valid_state_dict(self, state_dict, epoch, batch=-1):
-        sup_batch, qry_batch = next(iter(self.meta_dataloaders[self.validating_project]['support'])), next(iter(self.meta_dataloaders[self.validating_project]['query']))
-        batch_size_sup = len(sup_batch[0][0])
-        batch_size_qry=len(qry_batch[0][0])
+        # Clone for valid task
         task_model = self.model.clone()
-        adaptation_loss=self.run_one_batch(task_model,sup_batch,batch_size_sup,self.criterion)
-        task_model.adapt(adaptation_loss)
-        loss=self.eval_one_batch(task_model,qry_batch,batch_size_qry,self.criterion)
+
+        # adapt
+        for batch in self.meta_dataloaders[self.validating_project]['support']:
+            adaptation_loss=self.run_one_batch(task_model,batch,len(batch[0][0]),self.criterion)
+            task_model.adapt(adaptation_loss)
         
+        # eval
+        losses = []
+        for batch in self.meta_dataloaders[self.validating_project]['query']:
+            losses.append(self.eval_one_batch(task_model,batch,len(batch[0][0]),self.criterion).item())
+        loss = sum(losses)/len(losses)
+
         if config.save_valid_model:
             model_name = 'meta_model_valid-loss-{:.4f}_epoch-{}_batch-{}.pt'.format(loss, epoch, batch)
             save_thread = threading.Thread(target=self.save_model, args=(model_name, state_dict))

@@ -59,7 +59,7 @@ def _test(model,vocab_file_path,testing_project):
     train_instance = train.Train(vocab_file_path=vocab_file_path, model_state_dict=model,
                                  code_path=os.path.join(dataset_dir,f'split/{testing_project}/train.code')
                                 ,ast_path=os.path.join(dataset_dir,f'split/{testing_project}/train.sbt'),
-                                nl_path=os.path.join(dataset_dir,f'split/{testing_project}/train.comment'))
+                                nl_path=os.path.join(dataset_dir,f'split/{testing_project}/train.comment'),batch_size=config.support_bach_size)
     best_model_test_dict=train_instance.run_train()
     print('\nInitializing the test environments......')
     test_instance = eval.Test(best_model_test_dict,
