@@ -202,7 +202,7 @@ class MetaTrain(object):
 
     def train_iter(self,train_steps=12000, inner_train_steps=4, 
               valid_steps=200, inner_valid_steps=4, 
-              valid_every=5, eval_start=0, early_stop=50):
+              valid_every=5, eval_start=0, early_stop=50,epoch_number=30):
 
         self.criterion = nn.NLLLoss(ignore_index=utils.get_pad_index(self.nl_vocab))
 
@@ -213,14 +213,14 @@ class MetaTrain(object):
         #                                             step_size=config.lr_decay_every,
         #                                             gamma=config.lr_decay_rate)
 
-        for epoch in range(train_steps//valid_every):
-            pbar = tqdm(range(valid_every))
+        for epoch in range(epoch_number):
             support_iterators = {project: iter(self.meta_dataloaders[project]['support']) for project in self.training_projects}
             query_iterators = {project: iter(self.meta_dataloaders[project]['query']) for project in self.training_projects}
             num_iteration=max([len(self.meta_dataloaders[project]['support']) for project in self.training_projects ])
             print(f'[DEBUG] Num iteration: {num_iteration} \n')
+            pbar = tqdm(range(num_iteration))
 
-            for iteration in range(num_iteration): # outer loop
+            for iteration in pbar: # outer loop
                 losses = []
                 self.optimizer.zero_grad() 
                 for project in self.training_projects: # inner loop
