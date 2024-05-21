@@ -46,7 +46,7 @@ class MetaTrain(object):
         self.meta_dataloaders = {}
         for project in training_projects:
             self.meta_dataloaders[project] = {
-                'support': DataLoader(dataset=self.meta_datasets[project]['support'], batch_size=config.support_bach_size, shuffle=True,
+                'support': DataLoader(dataset=self.meta_datasets[project]['support'], batch_size=config.support_batch_size, shuffle=True,
                                            collate_fn=lambda *args: utils.unsort_collate_fn(args,
                                                                                             code_vocab=self.code_vocab,
                                                                                             ast_vocab=self.ast_vocab,
@@ -59,7 +59,7 @@ class MetaTrain(object):
             }
         
         self.meta_dataloaders[validating_project] = {
-                'support': DataLoader(dataset=self.meta_datasets[validating_project]['support'], batch_size=config.support_bach_size, shuffle=False,
+                'support': DataLoader(dataset=self.meta_datasets[validating_project]['support'], batch_size=config.support_batch_size, shuffle=False,
                                            collate_fn=lambda *args: utils.unsort_collate_fn(args,
                                                                                             code_vocab=self.code_vocab,
                                                                                             ast_vocab=self.ast_vocab,
@@ -200,7 +200,7 @@ class MetaTrain(object):
 
     def train_iter(self,train_steps=12000, inner_train_steps=3, 
               valid_steps=200, inner_valid_steps=4, 
-              valid_every=5, eval_start=0, early_stop=50,epoch_number=30):
+              valid_every=5, eval_start=0, early_stop=50, epoch_number=30):
 
         self.criterion = nn.NLLLoss(ignore_index=utils.get_pad_index(self.nl_vocab))
 
@@ -218,6 +218,7 @@ class MetaTrain(object):
             print(f'[DEBUG] Num iteration: {num_iteration} \n')
             pbar = tqdm(range(num_iteration))
             idx=0
+
             for iteration in pbar: # outer loop
                 losses = []
                 self.optimizer.zero_grad() 
@@ -235,6 +236,7 @@ class MetaTrain(object):
                     batch_size_sup = len(sup_batch[0][0])
                     batch_size_qry=len(qry_batch[0][0])
                     #print(f'[DEBUG] Batch size sup: {batch_size_sup}, Batch size query: {batch_size_qry} \n')
+
                     task_model = self.model.clone()
                     for _ in range(inner_train_steps):
                         adaptation_loss=self.run_one_batch(task_model,sup_batch,batch_size_sup,self.criterion)
@@ -243,12 +245,16 @@ class MetaTrain(object):
                     query_loss=self.run_one_batch(task_model,qry_batch,batch_size_qry,self.criterion)
                     query_loss.backward()
                     losses.append(query_loss.item())
+
+                    del sup_batch,qry_batch
                 torch.nn.utils.clip_grad_norm_(self.params, 5)
                 self.optimizer.step()
                 pbar.set_description('Epoch = %d, iteration = %d, [loss=%.4f, min=%.4f, max=%.4f] \n' % (epoch, idx, np.mean(losses), np.min(losses), np.max(losses)))
                 idx+=1
+
             if config.use_lr_decay:
                 self.lr_scheduler.step()
+                
             # validation
             if epoch >= eval_start:
                 self.valid_state_dict(state_dict=self.get_cur_state_dict(), epoch=epoch, batch=1)
