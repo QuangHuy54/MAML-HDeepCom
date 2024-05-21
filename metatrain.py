@@ -27,12 +27,11 @@ class MetaTrain(object):
 
         self.training_projects = training_projects
         self.validating_project = validating_project
-        source_projects = training_projects + [validating_project]
 
         # dataset
         dataset_dir = "../dataset/split/"
         self.meta_datasets = {}
-        for project in source_projects:
+        for project in (training_projects + [validating_project]):
             self.meta_datasets[project]={
                 "support": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/train.code'),
                                                 ast_path=os.path.join(dataset_dir,f'{project}/train.sbt'),
@@ -52,7 +51,7 @@ class MetaTrain(object):
                                                                                             code_vocab=self.code_vocab,
                                                                                             ast_vocab=self.ast_vocab,
                                                                                             nl_vocab=self.nl_vocab)),
-                'query': DataLoader(dataset=self.meta_datasets[project]['query'], batch_size=config.query_batch_size, shuffle=True, # đã sửa từ batch_size thành test_batch_size
+                'query': DataLoader(dataset=self.meta_datasets[project]['query'], batch_size=config.query_batch_size, shuffle=True,
                                            collate_fn=lambda *args: utils.unsort_collate_fn(args,
                                                                                             code_vocab=self.code_vocab,
                                                                                             ast_vocab=self.ast_vocab,
@@ -113,9 +112,9 @@ class MetaTrain(object):
 
         # model
         model = models.Model(code_vocab_size=self.code_vocab_size,
-                                  ast_vocab_size=self.ast_vocab_size,
-                                  nl_vocab_size=self.nl_vocab_size,
-                                  model_file_path=model_file_path)
+                            ast_vocab_size=self.ast_vocab_size,
+                            nl_vocab_size=self.nl_vocab_size,
+                            model_file_path=model_file_path)
         self.model=l2l.algorithms.MAML(model, lr=0.1, allow_nograd=True)
         self.params = list(self.model.code_encoder.parameters()) + \
             list(self.model.ast_encoder.parameters()) + \
@@ -128,7 +127,6 @@ class MetaTrain(object):
             {'params': self.model.ast_encoder.parameters(), 'lr': config.ast_encoder_lr},
             {'params': self.model.reduce_hidden.parameters(), 'lr': config.reduce_hidden_lr},
             {'params': self.model.decoder.parameters(), 'lr': config.decoder_lr},
-            
         ], betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
 
 
@@ -212,14 +210,14 @@ class MetaTrain(object):
         #     self.lr_scheduler = lr_scheduler.StepLR(self.optimizer,
         #                                             step_size=config.lr_decay_every,
         #                                             gamma=config.lr_decay_rate)
-
+        
         for epoch in range(epoch_number):
             support_iterators = {project: iter(self.meta_dataloaders[project]['support']) for project in self.training_projects}
             query_iterators = {project: iter(self.meta_dataloaders[project]['query']) for project in self.training_projects}
             num_iteration=max([len(self.meta_dataloaders[project]['support']) for project in self.training_projects ])
             print(f'[DEBUG] Num iteration: {num_iteration} \n')
             pbar = tqdm(range(num_iteration))
-
+            idx=0
             for iteration in pbar: # outer loop
                 losses = []
                 self.optimizer.zero_grad() 
@@ -247,7 +245,8 @@ class MetaTrain(object):
                     losses.append(query_loss.item())
                 torch.nn.utils.clip_grad_norm_(self.params, 5)
                 self.optimizer.step()
-                pbar.set_description('Epoch = %d, iteration = %d, [loss=%.4f, min=%.4f, max=%.4f] %d \n' % (epoch, iteration, np.mean(losses), np.min(losses), np.max(losses), 1))
+                pbar.set_description('Epoch = %d, iteration = %d, [loss=%.4f, min=%.4f, max=%.4f] \n' % (epoch, idx, np.mean(losses), np.min(losses), np.max(losses)))
+                idx+=1
             if config.use_lr_decay:
                 self.lr_scheduler.step()
             # validation
