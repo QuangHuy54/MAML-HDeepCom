@@ -200,7 +200,7 @@ class MetaTrain(object):
 
             return loss
 
-    def train_iter(self,train_steps=12000, inner_train_steps=4, 
+    def train_iter(self,train_steps=12000, inner_train_steps=3, 
               valid_steps=200, inner_valid_steps=4, 
               valid_every=5, eval_start=0, early_stop=50,epoch_number=30):
 
@@ -236,7 +236,7 @@ class MetaTrain(object):
                         qry_batch = next(query_iterators[project])
                     batch_size_sup = len(sup_batch[0][0])
                     batch_size_qry=len(qry_batch[0][0])
-                    print(f'[DEBUG] Batch size sup: {batch_size_sup}, Batch size query: {batch_size_qry} \n')
+                    #print(f'[DEBUG] Batch size sup: {batch_size_sup}, Batch size query: {batch_size_qry} \n')
                     task_model = self.model.clone()
                     for _ in range(inner_train_steps):
                         adaptation_loss=self.run_one_batch(task_model,sup_batch,batch_size_sup,self.criterion)
