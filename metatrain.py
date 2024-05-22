@@ -212,10 +212,11 @@ class MetaTrain(object):
         #                                             gamma=config.lr_decay_rate)
         
         for epoch in range(epoch_number):
-            support_iterators = {project: iter(self.meta_dataloaders[project]['support']) for project in self.training_projects}
-            query_iterators = {project: iter(self.meta_dataloaders[project]['query']) for project in self.training_projects}
-            num_iteration=max([len(self.meta_dataloaders[project]['support']) for project in self.training_projects ])
-            print(f'[DEBUG] Num iteration: {num_iteration} \n')
+            # support_iterators = {project: iter(self.meta_dataloaders[project]['support']) for project in self.training_projects}
+            # query_iterators = {project: iter(self.meta_dataloaders[project]['query']) for project in self.training_projects}
+            # num_iteration=max([len(self.meta_dataloaders[project]['support']) for project in self.training_projects ])
+            #print(f'[DEBUG] Num iteration: {num_iteration} \n')
+            num_iteration=50
             pbar = tqdm(range(num_iteration))
             idx=0
 
@@ -223,16 +224,16 @@ class MetaTrain(object):
                 losses = []
                 self.optimizer.zero_grad() 
                 for project in self.training_projects: # inner loop
-                    # sup_batch, qry_batch = next(iter(self.meta_dataloaders[project]['support'])), next(iter(self.meta_dataloaders[project]['query']))
-                    try:
-                        sup_batch = next(support_iterators[project])
-                        qry_batch = next(query_iterators[project])
-                    except StopIteration:
-                        # Reset iterators if StopIteration is encountered
-                        support_iterators[project] = iter(self.meta_dataloaders[project]['support'])
-                        query_iterators[project] = iter(self.meta_dataloaders[project]['query'])
-                        sup_batch = next(support_iterators[project])
-                        qry_batch = next(query_iterators[project])
+                    sup_batch, qry_batch = next(iter(self.meta_dataloaders[project]['support'])), next(iter(self.meta_dataloaders[project]['query']))
+                    # try:
+                    #     sup_batch = next(support_iterators[project])
+                    #     qry_batch = next(query_iterators[project])
+                    # except StopIteration:
+                    #     # Reset iterators if StopIteration is encountered
+                    #     support_iterators[project] = iter(self.meta_dataloaders[project]['support'])
+                    #     query_iterators[project] = iter(self.meta_dataloaders[project]['query'])
+                    #     sup_batch = next(support_iterators[project])
+                    #     qry_batch = next(query_iterators[project])
                     batch_size_sup = len(sup_batch[0][0])
                     batch_size_qry=len(qry_batch[0][0])
                     #print(f'[DEBUG] Batch size sup: {batch_size_sup}, Batch size query: {batch_size_qry} \n')
@@ -246,7 +247,6 @@ class MetaTrain(object):
                     query_loss.backward()
                     losses.append(query_loss.item())
 
-                    del sup_batch,qry_batch
                 torch.nn.utils.clip_grad_norm_(self.params, 5)
                 self.optimizer.step()
                 pbar.set_description('Epoch = %d, iteration = %d, [loss=%.4f, min=%.4f, max=%.4f] \n' % (epoch, idx, np.mean(losses), np.min(losses), np.max(losses)))
