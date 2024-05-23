@@ -253,7 +253,7 @@ def get_seq_lens(batch: list) -> list:
     return seq_lens
 
 
-def pad_one_batch(batch: list, vocab: Vocab) -> torch.Tensor:
+def pad_one_batch(batch: list, vocab: Vocab,toDevice=True) -> torch.Tensor:
     """
     pad batch using _PAD token and get the sequence lengths
     :param batch: one batch, [B, T]
@@ -262,7 +262,9 @@ def pad_one_batch(batch: list, vocab: Vocab) -> torch.Tensor:
     """
     batch = list(itertools.zip_longest(*batch, fillvalue=vocab.word2index[_PAD]))
     batch = [list(b) for b in batch]
-    return torch.tensor(batch, device=config.device).long()
+    if toDevice:
+        return torch.tensor(batch, device=config.device).long()
+    return torch.tensor(batch).long()
 
 
 def indices_from_batch(batch: list, vocab: Vocab) -> list:
@@ -367,7 +369,7 @@ def collate_fn(batch, code_vocab, ast_vocab, nl_vocab, is_eval=False) -> \
         nl_batch, nl_seq_lens
 
 
-def unsort_collate_fn(batch, code_vocab, ast_vocab, nl_vocab, raw_nl=False):
+def unsort_collate_fn(batch, code_vocab, ast_vocab, nl_vocab, raw_nl=False,toDevice=True):
     """
     process the batch without sorting
     :param batch: one batch, first dimension is batch, [B]
@@ -397,10 +399,10 @@ def unsort_collate_fn(batch, code_vocab, ast_vocab, nl_vocab, raw_nl=False):
     nl_seq_lens = get_seq_lens(nl_batch)
 
     # pad and transpose, [T, B], tensor
-    code_batch = pad_one_batch(code_batch, code_vocab)
-    ast_batch = pad_one_batch(ast_batch, ast_vocab)
+    code_batch = pad_one_batch(code_batch, code_vocab,toDevice)
+    ast_batch = pad_one_batch(ast_batch, ast_vocab,toDevice)
     if not raw_nl:
-        nl_batch = pad_one_batch(nl_batch, nl_vocab)
+        nl_batch = pad_one_batch(nl_batch, nl_vocab,toDevice)
 
     return code_batch, code_seq_lens, \
         ast_batch, ast_seq_lens, \

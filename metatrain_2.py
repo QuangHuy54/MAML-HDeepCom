@@ -15,6 +15,12 @@ import eval
 from tqdm import tqdm
 import learn2learn as l2l
 
+def tuple_map(fn, t, **kwargs):
+    if t is None:
+        return None
+    if type(t) not in {list, tuple}:
+        return fn(t, **kwargs)
+    return tuple(tuple_map(fn, s, **kwargs) for s in t)
 
 class MetaTrain(object):
 
@@ -50,12 +56,14 @@ class MetaTrain(object):
                                            collate_fn=lambda *args: utils.unsort_collate_fn(args,
                                                                                             code_vocab=self.code_vocab,
                                                                                             ast_vocab=self.ast_vocab,
-                                                                                            nl_vocab=self.nl_vocab)),
+                                                                                            nl_vocab=self.nl_vocab,
+                                                                                            toDevice=False)),
                 'query': DataLoader(dataset=self.meta_datasets[project]['query'], batch_size=config.query_batch_size, shuffle=True,
                                            collate_fn=lambda *args: utils.unsort_collate_fn(args,
                                                                                             code_vocab=self.code_vocab,
                                                                                             ast_vocab=self.ast_vocab,
-                                                                                            nl_vocab=self.nl_vocab))
+                                                                                            nl_vocab=self.nl_vocab,
+                                                                                            toDevice=False))
             }
         
         self.meta_dataloaders[validating_project] = {
@@ -63,12 +71,14 @@ class MetaTrain(object):
                                            collate_fn=lambda *args: utils.unsort_collate_fn(args,
                                                                                             code_vocab=self.code_vocab,
                                                                                             ast_vocab=self.ast_vocab,
-                                                                                            nl_vocab=self.nl_vocab)),
+                                                                                            nl_vocab=self.nl_vocab,
+                                                                                            toDevice=False)),
                 'query': DataLoader(dataset=self.meta_datasets[validating_project]['query'], batch_size=config.query_batch_size, shuffle=False,
                                            collate_fn=lambda *args: utils.unsort_collate_fn(args,
                                                                                             code_vocab=self.code_vocab,
                                                                                             ast_vocab=self.ast_vocab,
-                                                                                            nl_vocab=self.nl_vocab))
+                                                                                            nl_vocab=self.nl_vocab,
+                                                                                            toDevice=False))
             }
 
         # vocab
@@ -225,7 +235,8 @@ class MetaTrain(object):
                 self.optimizer.zero_grad() 
                 for project in self.training_projects: # inner loop
                     sup_batch, qry_batch = next(iter(self.meta_dataloaders[project]['support'])), next(iter(self.meta_dataloaders[project]['query']))
-                    sup_batch.to(config.device)
+                    sup_batch, qry_batch=tuple_map(lambda x: x.to(config.device) if type(x) is torch.Tensor else x,(sup_batch, qry_batch))
+
                     # try:
                     #     sup_batch = next(support_iterators[project])
                     #     qry_batch = next(query_iterators[project])
@@ -306,13 +317,15 @@ class MetaTrain(object):
 
         # adapt
         for batch in self.meta_dataloaders[self.validating_project]['support']:
-            adaptation_loss=self.run_one_batch(task_model,batch,len(batch[0][0]),self.criterion)
+            batch_s=tuple_map(lambda x: x.to(config.device) if type(x) is torch.Tensor else x,(batch))
+            adaptation_loss=self.run_one_batch(task_model,batch_s,len(batch[0][0]),self.criterion)
             task_model.adapt(adaptation_loss)
         
         # eval
         losses = []
         for batch in self.meta_dataloaders[self.validating_project]['query']:
-            losses.append(self.eval_one_batch(task_model,batch,len(batch[0][0]),self.criterion).item())
+            batch_s=tuple_map(lambda x: x.to(config.device) if type(x) is torch.Tensor else x,(batch))
+            losses.append(self.eval_one_batch(task_model,batch_s,len(batch[0][0]),self.criterion).item())
         loss = sum(losses)/len(losses)
 
         if config.save_valid_model:
