@@ -313,19 +313,17 @@ class MetaTrain(object):
 
     def valid_state_dict(self, state_dict, epoch, batch=-1):
         # Clone for valid task
-        task_model = self.model.clone()
 
         # adapt
-        for batch in self.meta_dataloaders[self.validating_project]['support']:
-            batch_s=tuple_map(lambda x: x.to(config.device) if type(x) is torch.Tensor else x,(batch))
-            adaptation_loss=self.run_one_batch(task_model,batch_s,len(batch[0][0]),self.criterion)
-            task_model.adapt(adaptation_loss)
-        
-        # eval
         losses = []
-        for batch in self.meta_dataloaders[self.validating_project]['query']:
-            batch_s=tuple_map(lambda x: x.to(config.device) if type(x) is torch.Tensor else x,(batch))
-            losses.append(self.eval_one_batch(task_model,batch_s,len(batch[0][0]),self.criterion).item())
+        for batch_s,batch_q in zip(self.meta_dataloaders[self.validating_project]['support'],self.meta_dataloaders[self.validating_project]['query']):
+            task_model = self.model.clone()
+            batch_sc,batch_qc=tuple_map(lambda x: x.to(config.device) if type(x) is torch.Tensor else x,(batch_s,batch_q))
+            adaptation_loss=self.run_one_batch(task_model,batch_sc,len(batch_s[0][0]),self.criterion)
+            task_model.adapt(adaptation_loss)
+            losses.append(self.eval_one_batch(task_model,batch_qc,len(batch_q[0][0]),self.criterion).item())
+
+        
         loss = sum(losses)/len(losses)
 
         if config.save_valid_model:
