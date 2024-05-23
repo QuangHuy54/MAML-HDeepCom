@@ -198,7 +198,7 @@ class MetaTrain(object):
 
             return loss
 
-    def train_iter(self,train_steps=12000, inner_train_steps=3, 
+    def train_iter(self,train_steps=12000, inner_train_steps=2, 
               valid_steps=200, inner_valid_steps=4, 
               valid_every=5, eval_start=0, early_stop=50, epoch_number=30):
 
@@ -216,7 +216,7 @@ class MetaTrain(object):
             # query_iterators = {project: iter(self.meta_dataloaders[project]['query']) for project in self.training_projects}
             # num_iteration=max([len(self.meta_dataloaders[project]['support']) for project in self.training_projects ])
             #print(f'[DEBUG] Num iteration: {num_iteration} \n')
-            num_iteration=50
+            num_iteration=5
             pbar = tqdm(range(num_iteration))
             idx=0
 
@@ -246,7 +246,7 @@ class MetaTrain(object):
                     query_loss=self.run_one_batch(task_model,qry_batch,batch_size_qry,self.criterion)
                     query_loss.backward()
                     losses.append(query_loss.item())
-
+                    del sup_batch,qry_batch
                 torch.nn.utils.clip_grad_norm_(self.params, 5)
                 self.optimizer.step()
                 pbar.set_description('Epoch = %d, iteration = %d, [loss=%.4f, min=%.4f, max=%.4f] \n' % (epoch, idx, np.mean(losses), np.min(losses), np.max(losses)))
