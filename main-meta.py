@@ -1,7 +1,7 @@
 import os
 
 import config
-import metatrain_2
+import metatrain_3
 import eval
 import random
 import train
@@ -24,7 +24,7 @@ def _train(training_projects,validating_project,vocab_file_path=None, model_file
         print('Model will be created by program.')
 
     print('\nInitializing the training environments......\n')
-    train_instance = metatrain_2.MetaTrain(training_projects=training_projects,validating_project=validating_project,vocab_file_path=vocab_file_path, model_file_path=model_file_path)
+    train_instance = metatrain_3.MetaTrain(training_projects=training_projects,validating_project=validating_project,vocab_file_path=vocab_file_path, model_file_path=model_file_path)
     print('Environments built successfully.\n')
     print('Size of train dataset:', train_instance.meta_datasets_size)
 
@@ -59,7 +59,7 @@ def _test(model,vocab_file_path,testing_project):
     train_instance = train.Train(vocab_file_path=vocab_file_path, model_state_dict=model,
                                  code_path=os.path.join(dataset_dir,f'split/{testing_project}/train.code')
                                 ,ast_path=os.path.join(dataset_dir,f'split/{testing_project}/train.sbt'),
-                                nl_path=os.path.join(dataset_dir,f'split/{testing_project}/train.comment'),batch_size=config.support_bach_size)
+                                nl_path=os.path.join(dataset_dir,f'split/{testing_project}/train.comment'),batch_size=config.support_batch_size)
     best_model_test_dict=train_instance.run_train()
     print('\nInitializing the test environments......')
     test_instance = eval.Test(best_model_test_dict,
