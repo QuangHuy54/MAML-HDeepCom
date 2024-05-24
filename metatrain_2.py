@@ -208,9 +208,9 @@ class MetaTrain(object):
 
             return loss
 
-    def train_iter(self,train_steps=12000, inner_train_steps=2, 
+    def train_iter(self,train_steps=12000, inner_train_steps=1, 
               valid_steps=200, inner_valid_steps=4, 
-              valid_every=5, eval_start=0, early_stop=50, epoch_number=30):
+              valid_every=5, eval_start=0, early_stop=50, epoch_number=50):
 
         self.criterion = nn.NLLLoss(ignore_index=utils.get_pad_index(self.nl_vocab))
 
@@ -226,7 +226,7 @@ class MetaTrain(object):
             # query_iterators = {project: iter(self.meta_dataloaders[project]['query']) for project in self.training_projects}
             # num_iteration=max([len(self.meta_dataloaders[project]['support']) for project in self.training_projects ])
             #print(f'[DEBUG] Num iteration: {num_iteration} \n')
-            num_iteration=5
+            num_iteration=8
             pbar = tqdm(range(num_iteration))
             idx=0
 
@@ -258,6 +258,8 @@ class MetaTrain(object):
                     query_loss=self.run_one_batch(task_model,qry_batch,batch_size_qry,self.criterion)
                     query_loss.backward()
                     losses.append(query_loss.item())
+                for p in self.model.parameters():
+                    p.grad.data.mul_(1. / len(config.support_batch_size))
                 torch.nn.utils.clip_grad_norm_(self.params, 5)
                 self.optimizer.step()
                 pbar.set_description('Epoch = %d, iteration = %d, [loss=%.4f, min=%.4f, max=%.4f] \n' % (epoch, idx, np.mean(losses), np.min(losses), np.max(losses)))
@@ -325,6 +327,7 @@ class MetaTrain(object):
 
         
         loss = sum(losses)/len(losses)
+        print("Validation complete for epoch ",epoch," with average loss: ",loss)
 
         if config.save_valid_model:
             model_name = 'meta_model_valid-loss-{:.4f}_epoch-{}_batch-{}.pt'.format(loss, epoch, batch)

@@ -1,7 +1,7 @@
 import os
 
 import config
-import metatrain_3
+import metatrain_2 as metatrain
 import eval
 import random
 import train
@@ -24,7 +24,7 @@ def _train(training_projects,validating_project,vocab_file_path=None, model_file
         print('Model will be created by program.')
 
     print('\nInitializing the training environments......\n')
-    train_instance = metatrain_3.MetaTrain(training_projects=training_projects,validating_project=validating_project,vocab_file_path=vocab_file_path, model_file_path=model_file_path)
+    train_instance = metatrain.MetaTrain(training_projects=training_projects,validating_project=validating_project,vocab_file_path=vocab_file_path, model_file_path=model_file_path)
     print('Environments built successfully.\n')
     print('Size of train dataset:', train_instance.meta_datasets_size)
 
@@ -89,7 +89,7 @@ def split_dataset(projects):
 
 if __name__ == '__main__':
     projects = ['saltstack/salt','AppScale/appscale','edx/edx-platform','sympy/sympy','IronLanguages/main','mne-tools/mne-python','JiYou/openstack','openhatch/oh-mainline','cloudera/hue','ahmetcemturan/SFACT','mne-tools/mne-python'] # tạm fix cứng
-    training_projects=['AppScale/appscale','edx/edx-platform','sympy/sympy' ,'JiYou/openstack','IronLanguages/main','openhatch/oh-mainline','mne-tools/mne-python','cloudera/hue']
+    training_projects=['saltstack/salt','AppScale/appscale','edx/edx-platform','sympy/sympy' ,'JiYou/openstack','IronLanguages/main','openhatch/oh-mainline','mne-tools/mne-python','cloudera/hue']
     validating_project="ahmetcemturan/SFACT"
     testing_project="kbengine/kbengine"
     #training_projects, validating_project, testing_project = split_dataset(projects)

@@ -254,7 +254,7 @@ class MetaTrain(object):
                     for _ in range(inner_train_steps):
                         adaptation_loss=self.run_one_batch(task_model,sup_batch,batch_size_sup,self.criterion)
                         task_model.adapt(adaptation_loss) 
-
+            
                     query_loss=self.run_one_batch(task_model,qry_batch,batch_size_qry,self.criterion)
                     query_loss.backward()
                     losses.append(query_loss.item())
