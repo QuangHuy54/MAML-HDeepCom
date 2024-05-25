@@ -226,7 +226,7 @@ class MetaTrain(object):
             # query_iterators = {project: iter(self.meta_dataloaders[project]['query']) for project in self.training_projects}
             # num_iteration=max([len(self.meta_dataloaders[project]['support']) for project in self.training_projects ])
             #print(f'[DEBUG] Num iteration: {num_iteration} \n')
-            num_iteration=20
+            num_iteration=10
             pbar = tqdm(range(num_iteration))
             idx=0
 
@@ -258,8 +258,6 @@ class MetaTrain(object):
                     query_loss=self.run_one_batch(task_model,qry_batch,batch_size_qry,self.criterion)
                     query_loss.backward()
                     losses.append(query_loss.item())
-                for p in self.model.parameters():
-                    p.grad.data.mul_(1. / config.support_batch_size)
                 torch.nn.utils.clip_grad_norm_(self.params, 5)
                 self.optimizer.step()
                 pbar.set_description('Epoch = %d, iteration = %d, [loss=%.4f, min=%.4f, max=%.4f] \n' % (epoch, idx, np.mean(losses), np.min(losses), np.max(losses)))
