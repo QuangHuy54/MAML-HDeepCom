@@ -89,7 +89,7 @@ max_code_length = 443
 max_nl_length = 19
 min_nl_length = 4
 max_decode_steps = 30
-early_stopping_patience = 10
+early_stopping_patience = 5
 
 
 # hyperparameters
