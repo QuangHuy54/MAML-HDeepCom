@@ -23,10 +23,10 @@ def _train(vocab_file_path=None, model_file_path=None):
         print('Model will be created by program.')
 
     print('\nInitializing the training environments......\n')
-    train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model_file_path,code_path='../dataset/split/train.code'
-                                 ,ast_path='../dataset/split/train.sbt',nl_path='../dataset/split/train.comment'
-                                 ,code_valid_path='../dataset/split/valid.code',nl_valid_path='../dataset/split/valid.comment',
-                                 ast_valid_path='../dataset/split/valid.sbt')
+    train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model_file_path,code_path='../dataset_v2/original/train.code'
+                                 ,ast_path='../dataset_v2/original/train.sbt',nl_path='../dataset_v2/original/train.comment'
+                                 ,code_valid_path='../dataset_v2/original/valid.code',nl_valid_path='../dataset_v2/original/valid.comment',
+                                 ast_valid_path='../dataset_v2/original/valid.sbt')
                                 
     print('Environments built successfully.\n')
     print('Size of train dataset:', train_instance.train_dataset_size)
@@ -72,7 +72,7 @@ def _train(vocab_file_path=None, model_file_path=None):
 
 def _test(model):
     print('\nInitializing the test environments......')
-    test_instance = eval.Test(model,code_path='../dataset/split/test.code',ast_path='../dataset/split/test.sbt',nl_path='../dataset/split/test.comment')
+    test_instance = eval.Test(model,code_path='../dataset_v2/original/test.code',ast_path='../dataset_v2/original/test.sbt',nl_path='../dataset_v2/original/test.comment')
     print('Environments built successfully.\n')
     print('Size of test dataset:', test_instance.dataset_size)
     config.logger.info('Size of test dataset: {}'.format(test_instance.dataset_size))
