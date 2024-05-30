@@ -85,8 +85,8 @@ save_test_details = True
 
 
 # limitations
-max_code_length = 425
-max_nl_length = 20
+max_code_length = 320
+max_nl_length = 30
 min_nl_length = 4
 max_decode_steps = 30
 early_stopping_patience = 5
