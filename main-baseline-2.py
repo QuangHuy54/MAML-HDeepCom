@@ -27,10 +27,9 @@ def _train(testing_project,is_transfer,vocab_file_path=None, model_file_path=Non
         train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model_file_path,code_path=f'../dataset_v2/original/{testing_project}/train_transfer.code'
                                     ,ast_path=f'../dataset_v2/original/{testing_project}/train_transfer.sbt',nl_path=f'../dataset_v2/original/{testing_project}/train_transfer.comment'
                                     ,code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
-                                    ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
-                                    ,model_state_dict=model_state_dict)
+                                    ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt')
     else:
-        train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model_file_path,code_path=f'../dataset_v2/original/{testing_project}/train.code'
+        train_instance = train.Train(vocab_file_path=vocab_file_path,code_path=f'../dataset_v2/original/{testing_project}/train.code'
                                     ,ast_path=f'../dataset_v2/original/{testing_project}/train.sbt',nl_path=f'../dataset_v2/original/{testing_project}/train.comment'
                                     ,code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
                                     ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
@@ -61,7 +60,7 @@ def _train(testing_project,is_transfer,vocab_file_path=None, model_file_path=Non
 
 def _test(model,testing_projet):
     print('\nInitializing the test environments......')
-    test_instance = eval.Test(model,code_path='../dataset_v2/original/{testing_project}/valid.code',ast_path='../dataset_v2/original/{testing_project}/valid.sbt',nl_path='../dataset_v2/original/{testing_project}/valid.comment')
+    test_instance = eval.Test(model,code_path=f'../dataset_v2/original/{testing_project}/valid.code',ast_path=f'../dataset_v2/original/{testing_project}/valid.sbt',nl_path=f'../dataset_v2/original/{testing_project}/valid.comment')
     print('Environments built successfully.\n')
     print('Size of test dataset:', test_instance.dataset_size)
     config.logger.info('Size of test dataset: {}'.format(test_instance.dataset_size))
@@ -75,6 +74,8 @@ def _test(model,testing_projet):
 if __name__ == '__main__':
     testing_project='dagger'
     best_model_dict = _train(testing_project,is_transfer=False,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path))
+
     best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_state_dict=best_model_dict)
+
     _test(best_model_dict2,testing_project)
     # _test(os.path.join('20240514_083750', 'best_epoch-1_batch-last.pt'))
