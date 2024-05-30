@@ -35,7 +35,7 @@ class MetaTrain(object):
         self.validating_project = validating_project
 
         # dataset
-        dataset_dir = "../dataset/split/"
+        dataset_dir = "../dataset_v2/original/"
         self.meta_datasets = {}
         for project in (training_projects + [validating_project]):
             self.meta_datasets[project]={

@@ -55,17 +55,17 @@ def _train(training_projects,validating_project,vocab_file_path=None, model_file
 
 
 def _test(model,vocab_file_path,testing_project):
-    dataset_dir = "../dataset/"
+    dataset_dir = "../dataset_v2/"
     train_instance = train.Train(vocab_file_path=vocab_file_path, model_state_dict=model,
-                                 code_path=os.path.join(dataset_dir,f'split/{testing_project}/train.code')
-                                ,ast_path=os.path.join(dataset_dir,f'split/{testing_project}/train.sbt'),
-                                nl_path=os.path.join(dataset_dir,f'split/{testing_project}/train.comment'),batch_size=config.support_batch_size)
+                                 code_path=os.path.join(dataset_dir,f'original/{testing_project}/train.code')
+                                ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/train.sbt'),
+                                nl_path=os.path.join(dataset_dir,f'original/{testing_project}/train.comment'),batch_size=config.support_batch_size)
     best_model_test_dict=train_instance.run_train()
     print('\nInitializing the test environments......')
     test_instance = eval.Test(best_model_test_dict,
-                              code_path=os.path.join(dataset_dir,f'split/{testing_project}/valid.code')
-                                ,ast_path=os.path.join(dataset_dir,f'split/{testing_project}/valid.sbt'),
-                                nl_path=os.path.join(dataset_dir,f'split/{testing_project}/valid.comment'))
+                              code_path=os.path.join(dataset_dir,f'original/{testing_project}/valid.code')
+                                ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/valid.sbt'),
+                                nl_path=os.path.join(dataset_dir,f'original/{testing_project}/valid.comment'))
     print('Environments built successfully.\n')
     config.logger.info('Size of test dataset: {}'.format(test_instance.dataset_size))
 
@@ -88,10 +88,13 @@ def split_dataset(projects):
 
 
 if __name__ == '__main__':
-    projects = ['AppScale/appscale','edx/edx-platform','sympy/sympy','IronLanguages/main','mne-tools/mne-python','JiYou/openstack','openhatch/oh-mainline','cloudera/hue','ahmetcemturan/SFACT','mne-tools/mne-python'] # tạm fix cứng
-    training_projects=['AppScale/appscale','edx/edx-platform','sympy/sympy' ,'JiYou/openstack','IronLanguages/main','openhatch/oh-mainline','mne-tools/mne-python','cloudera/hue']
-    validating_project="ahmetcemturan/SFACT"
-    testing_project="kbengine/kbengine"
+    # projects = ['AppScale/appscale','edx/edx-platform','sympy/sympy','IronLanguages/main','mne-tools/mne-python','JiYou/openstack','openhatch/oh-mainline','cloudera/hue','ahmetcemturan/SFACT','mne-tools/mne-python'] # tạm fix cứng
+    # training_projects=['AppScale/appscale','edx/edx-platform','sympy/sympy' ,'JiYou/openstack','IronLanguages/main','openhatch/oh-mainline','mne-tools/mne-python','cloudera/hue']
+    # validating_project="ahmetcemturan/SFACT"
+    # testing_project="kbengine/kbengine"
+    training_projects=['ExoPlayer','flink','guava','kafka','spring-boot','spring-framework','spring-security']
+    validating_project='dubbo'
+    testing_project='dagger'
         #training_projects, validating_project, testing_project = split_dataset(projects)
     config.logger.info(f'validate: {validating_project}, testing: {testing_project}')
     best_model_dict = _train(training_projects=training_projects, \
