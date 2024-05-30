@@ -38,24 +38,6 @@ def _train(testing_project,is_transfer,vocab_file_path=None, model_file_path=Non
     print('Environments built successfully.\n')
     print('Size of train dataset:', train_instance.train_dataset_size)
 
-    code_oov_rate = 1 - train_instance.code_vocab_size / train_instance.origin_code_vocab_size
-    nl_oov_rate = 1 - train_instance.nl_vocab_size / train_instance.origin_nl_vocab_size
-
-    print('\nSize of source code vocabulary:', train_instance.origin_code_vocab_size,
-          '->', train_instance.code_vocab_size)
-    print('Source code OOV rate: {:.2f}%'.format(code_oov_rate * 100))
-    print('\nSize of ast of code vocabulary:', train_instance.ast_vocab_size)
-    print('\nSize of code comment vocabulary:', train_instance.origin_nl_vocab_size, '->', train_instance.nl_vocab_size)
-    print('Code comment OOV rate: {:.2f}%'.format(nl_oov_rate * 100))
-    config.logger.info('Size of train dataset:{}'.format(train_instance.train_dataset_size))
-    config.logger.info('Size of source code vocabulary: {} -> {}'.format(
-        train_instance.origin_code_vocab_size, train_instance.code_vocab_size))
-    config.logger.info('Source code OOV rate: {:.2f}%'.format(code_oov_rate * 100))
-    config.logger.info('Size of ast of code vocabulary: {}'.format(train_instance.ast_vocab_size))
-    config.logger.info('Size of code comment vocabulary: {} -> {}'.format(
-        train_instance.origin_nl_vocab_size, train_instance.nl_vocab_size))
-    config.logger.info('Code comment OOV rate: {:.2f}%'.format(nl_oov_rate * 100))
-
     if config.validate_during_train:
         print('\nValidate every', config.validate_every, 'batches and each epoch.')
         print('Size of validation dataset:', train_instance.eval_instance.dataset_size)
