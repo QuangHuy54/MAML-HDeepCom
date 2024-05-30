@@ -24,16 +24,16 @@ def _train(testing_project,is_transfer,vocab_file_path=None, model_file_path=Non
 
     print('\nInitializing the training environments......\n')
     if not is_transfer:
-        train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model_file_path,code_path='../dataset_v2/original/{testing_project}/train_transfer.code'
-                                    ,ast_path='../dataset_v2/original/{testing_project}/train_transfer.sbt',nl_path='../dataset_v2/original/{testing_project}/train_transfer.comment'
-                                    ,code_valid_path='../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path='../dataset_v2/original/{testing_project}/valid_transfer.comment',
-                                    ast_valid_path='../dataset_v2/original/{testing_project}/valid_transfer.sbt'
+        train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model_file_path,code_path=f'../dataset_v2/original/{testing_project}/train_transfer.code'
+                                    ,ast_path=f'../dataset_v2/original/{testing_project}/train_transfer.sbt',nl_path=f'../dataset_v2/original/{testing_project}/train_transfer.comment'
+                                    ,code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
+                                    ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
                                     ,model_state_dict=model_state_dict)
     else:
-        train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model_file_path,code_path='../dataset_v2/original/{testing_project}/train.code'
-                                    ,ast_path='../dataset_v2/original/{testing_project}/train.sbt',nl_path='../dataset_v2/original/{testing_project}/train.comment'
-                                    ,code_valid_path='../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path='../dataset_v2/original/{testing_project}/valid_transfer.comment',
-                                    ast_valid_path='../dataset_v2/original/{testing_project}/valid_transfer.sbt'
+        train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model_file_path,code_path=f'../dataset_v2/original/{testing_project}/train.code'
+                                    ,ast_path=f'../dataset_v2/original/{testing_project}/train.sbt',nl_path=f'../dataset_v2/original/{testing_project}/train.comment'
+                                    ,code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
+                                    ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
                                     ,model_state_dict=model_state_dict)        
     print('Environments built successfully.\n')
     print('Size of train dataset:', train_instance.train_dataset_size)
