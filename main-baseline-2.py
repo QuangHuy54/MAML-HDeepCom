@@ -76,5 +76,5 @@ if __name__ == '__main__':
     testing_project='dagger'
     best_model_dict = _train(testing_project,is_transfer=False,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path))
     best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_state_dict=best_model_dict)
-    _test(best_model_dict2)
+    _test(best_model_dict2,testing_project)
     # _test(os.path.join('20240514_083750', 'best_epoch-1_batch-last.pt'))
