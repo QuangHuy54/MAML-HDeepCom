@@ -125,7 +125,7 @@ class MetaTrain(object):
                             ast_vocab_size=self.ast_vocab_size,
                             nl_vocab_size=self.nl_vocab_size,
                             model_file_path=model_file_path)
-        self.model=l2l.algorithms.MAML(model, lr=0.1, allow_nograd=True)
+        self.model=l2l.algorithms.MAML(model, lr=0.1, allow_nograd=True,first_order=True)
         self.params = list(self.model.module.code_encoder.parameters()) + \
             list(self.model.module.ast_encoder.parameters()) + \
             list(self.model.module.reduce_hidden.parameters()) + \
@@ -208,7 +208,7 @@ class MetaTrain(object):
 
             return loss
 
-    def train_iter(self,train_steps=12000, inner_train_steps=1, 
+    def train_iter(self,train_steps=12000, inner_train_steps=2, 
               valid_steps=200, inner_valid_steps=4, 
               valid_every=5, eval_start=0, early_stop=50, epoch_number=50):
 
@@ -226,7 +226,7 @@ class MetaTrain(object):
             # query_iterators = {project: iter(self.meta_dataloaders[project]['query']) for project in self.training_projects}
             # num_iteration=max([len(self.meta_dataloaders[project]['support']) for project in self.training_projects ])
             #print(f'[DEBUG] Num iteration: {num_iteration} \n')
-            num_iteration=10
+            num_iteration=20
             pbar = tqdm(range(num_iteration))
             idx=0
 
