@@ -55,8 +55,8 @@ TryResource
 ElementValuePair
 FieldDeclaration
 ElementArrayValue
+Statement
 InnerClassCreator
 ClassDeclaration
-Statement
 SuperMemberReference
 ConstructorDeclaration

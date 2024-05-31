@@ -2,9 +2,9 @@ import utils
 import config
 import data
 
-code_path='../dataset_v2/original/all.code'
-ast_path='../dataset_v2/original/all.sbt'
-nl_path='../dataset_v2/original/all.comment'
+code_path='../dataset_v2/original/all_truncated.code'
+ast_path='../dataset_v2/original/all_truncated.sbt'
+nl_path='../dataset_v2/original/all_truncated.comment'
 dataset = data.CodePtrDataset(code_path,ast_path,nl_path)
 code_vocab: utils.Vocab
 ast_vocab: utils.Vocab
