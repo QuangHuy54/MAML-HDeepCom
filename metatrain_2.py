@@ -125,7 +125,7 @@ class MetaTrain(object):
                             ast_vocab_size=self.ast_vocab_size,
                             nl_vocab_size=self.nl_vocab_size,
                             model_file_path=model_file_path)
-        self.model=l2l.algorithms.MAML(model, lr=0.1, allow_nograd=True,first_order=True)
+        self.model=l2l.algorithms.MAML(model, lr=0.1, allow_nograd=True)
         self.params = list(self.model.module.code_encoder.parameters()) + \
             list(self.model.module.ast_encoder.parameters()) + \
             list(self.model.module.reduce_hidden.parameters()) + \
