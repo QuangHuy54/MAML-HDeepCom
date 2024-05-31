@@ -35,7 +35,7 @@ class MetaTrain(object):
         self.validating_project = validating_project
 
         # dataset
-        dataset_dir = "../dataset/split/"
+        dataset_dir = "../dataset_v2/original/"
         self.meta_datasets = {}
         for project in (training_projects + [validating_project]):
             self.meta_datasets[project]={
@@ -238,12 +238,14 @@ class MetaTrain(object):
 
                     try:
                         sup_batch = next(support_iterators[project])
+                    except StopIteration:
+                        support_iterators[project] = iter(self.meta_dataloaders[project]['support'])
+                        sup_batch = next(support_iterators[project])
+                    try:
                         qry_batch = next(query_iterators[project])
                     except StopIteration:
                         # Reset iterators if StopIteration is encountered
-                        support_iterators[project] = iter(self.meta_dataloaders[project]['support'])
                         query_iterators[project] = iter(self.meta_dataloaders[project]['query'])
-                        sup_batch = next(support_iterators[project])
                         qry_batch = next(query_iterators[project])
                     sup_batch, qry_batch=tuple_map(lambda x: x.to(config.device) if type(x) is torch.Tensor else x,(sup_batch, qry_batch))
                     batch_size_sup = len(sup_batch[0][0])
@@ -258,6 +260,8 @@ class MetaTrain(object):
                     query_loss=self.run_one_batch(task_model,qry_batch,batch_size_qry,self.criterion)
                     query_loss.backward()
                     losses.append(query_loss.item())
+                    del sup_batch,qry_batch
+                    torch.cuda.empty_cache()
                 torch.nn.utils.clip_grad_norm_(self.params, 5)
                 self.optimizer.step()
                 pbar.set_description('Epoch = %d, iteration = %d, [loss=%.4f, min=%.4f, max=%.4f] \n' % (epoch, iteration, np.mean(losses), np.min(losses), np.max(losses)))

@@ -1,7 +1,7 @@
 import os
 
 import config
-import metatrain_2 as metatrain
+import metatrain_3 as metatrain
 import eval
 import random
 import train
