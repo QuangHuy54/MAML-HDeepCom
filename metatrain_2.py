@@ -254,7 +254,6 @@ class MetaTrain(object):
                     for _ in range(inner_train_steps):
                         adaptation_loss=self.run_one_batch(task_model,sup_batch,batch_size_sup,self.criterion)
                         task_model.adapt(adaptation_loss) 
-
                     query_loss=self.run_one_batch(task_model,qry_batch,batch_size_qry,self.criterion)
                     query_loss.backward()
                     losses.append(query_loss.item())
@@ -262,6 +261,8 @@ class MetaTrain(object):
                 torch.nn.utils.clip_grad_norm_(self.params, 5)
                 self.optimizer.step()
                 pbar.set_description('Epoch = %d, iteration = %d, [loss=%.4f, min=%.4f, max=%.4f] \n' % (epoch, idx, np.mean(losses), np.min(losses), np.max(losses)))
+                config.logger.info('epoch: {}/{}, iteration: {}/{}, avg loss: {:.4f}'.format(
+                        epoch + 1, epoch_number,iteration+1 , num_iteration, np.mean(losses)))
                 idx+=1
 
             if config.use_lr_decay:
