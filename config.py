@@ -85,8 +85,8 @@ save_test_details = True
 
 
 # limitations
-max_code_length = 313
-max_nl_length = 25
+max_code_length = 353
+max_nl_length = 23
 min_nl_length = 4
 max_decode_steps = 30
 early_stopping_patience = 15
@@ -110,7 +110,7 @@ decoder_lr = 0.001
 lr_decay_every = 1
 lr_decay_rate = 0.99
 n_epochs = 30    # 50
-support_batch_size=64
+support_batch_size=32
 query_batch_size=32
 beam_width = 5
 beam_top_sentences = 1     # number of sentences beam decoder decode for one input
