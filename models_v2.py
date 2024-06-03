@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 import math
 import random
-from transformers import GPT2LMHeadModel
+from transformers import PegasusTokenizer, PegasusForConditionalGeneration
 
 import config
 import utils
@@ -187,7 +187,7 @@ class Decoder(nn.Module):
                 attn_weights: [B, 1, T]
         """
         embedded = self.embedding(inputs).unsqueeze(0)      # [1, B, embedding_dim]
-        # embedded = self.dropout(embedded)
+        embedded = self.dropout(embedded)
 
         code_attn_weights = self.code_attention(last_hidden, code_outputs)  # [B, 1, T]
         code_context = code_attn_weights.bmm(code_outputs.transpose(0, 1))  # [B, 1, H]
@@ -208,152 +208,28 @@ class Decoder(nn.Module):
         return outputs, hidden, code_attn_weights, ast_attn_weights
 
 
-class TransformerDecoder(nn.Module):
-    def __init__(self, model_name='gpt2', dropout=config.decoder_dropout_rate):
-        super(TransformerDecoder, self).__init__()
-        self.model_name = model_name
-        self.model = GPT2LMHeadModel.from_pretrained(model_name)
-        self.dropout = nn.Dropout(dropout)
-
-    def forward(self, input_ids, attention_mask=None, encoder_hidden_states=None):
-        """
-        Forward pass through the Transformer decoder.
-        :param input_ids: tensor of input ids (tokens), shape (batch_size, seq_len)
-        :param attention_mask: optional mask to avoid performing attention on padding token indices, shape (batch_size, seq_len)
-        :param encoder_hidden_states: optional encoder hidden states for cross-attention
-        :return: logits from the model, shape (batch_size, seq_len, vocab_size)
-        """
-        outputs = self.model(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-            encoder_hidden_states=encoder_hidden_states,
-        )
-        logits = outputs.logits  # shape (batch_size, seq_len, vocab_size)
-        return logits
-
-
-# class Model(nn.Module):
-
-#     def __init__(self, code_vocab_size, ast_vocab_size, nl_vocab_size,
-#                  model_file_path=None, model_state_dict=None, is_eval=False):
-#         super(Model, self).__init__()
-
-#         # vocabulary size for encoders
-#         self.code_vocab_size = code_vocab_size
-#         self.ast_vocab_size = ast_vocab_size
-#         self.is_eval = is_eval
-
-#         # init models
-#         self.code_encoder = Encoder(self.code_vocab_size)
-#         self.ast_encoder = Encoder(self.ast_vocab_size)
-#         self.reduce_hidden = ReduceHidden()
-#         self.decoder = Decoder(nl_vocab_size)
-
-#         if config.use_cuda:
-#             self.code_encoder = self.code_encoder.cuda()
-#             self.ast_encoder = self.ast_encoder.cuda()
-#             self.reduce_hidden = self.reduce_hidden.cuda()
-#             self.decoder = self.decoder.cuda()
-
-#         if model_file_path:
-#             state = torch.load(model_file_path,map_location=torch.device('cuda' if config.use_cuda else 'cpu'))
-#             self.set_state_dict(state)
-
-#         if model_state_dict:
-#             self.set_state_dict(model_state_dict)
-
-#         if is_eval:
-#             self.code_encoder.eval()
-#             self.ast_encoder.eval()
-#             self.reduce_hidden.eval()
-#             self.decoder.eval()
-
-#     def forward(self, batch, batch_size, nl_vocab, is_test=False):
-#         """
-
-#         :param batch:
-#         :param batch_size:
-#         :param nl_vocab:
-#         :param is_test: if True, function will return before decoding
-#         :return: decoder_outputs: [T, B, nl_vocab_size]
-#         """
-#         # batch: [T, B]
-#         code_batch, code_seq_lens, ast_batch, ast_seq_lens, nl_batch, nl_seq_lens = batch
-
-#         # encode
-#         # outputs: [T, B, H]
-#         # hidden: [2, B, H]
-#         code_outputs, code_hidden = self.code_encoder(code_batch, code_seq_lens)
-#         ast_outputs, ast_hidden = self.ast_encoder(ast_batch, ast_seq_lens)
-
-#         # data for decoder
-#         code_hidden = code_hidden[0] + code_hidden[1]   # [B, H]
-#         code_hidden = code_hidden.unsqueeze(0)          # [1, B, H]
-#         ast_hidden = ast_hidden[0] + ast_hidden[1]  # [B, H]
-#         ast_hidden = ast_hidden.unsqueeze(0)       # [1, B, H]
-#         decoder_hidden = self.reduce_hidden(code_hidden, ast_hidden)  # [1, B, H]
-
-#         if is_test:
-#             return code_outputs, ast_outputs, decoder_hidden
-
-#         if nl_seq_lens is None:
-#             max_decode_step = config.max_decode_steps
-#         else:
-#             max_decode_step = max(nl_seq_lens)
-
-#         decoder_inputs = utils.init_decoder_inputs(batch_size=batch_size, vocab=nl_vocab)  # [B]
-
-#         decoder_outputs = torch.zeros((max_decode_step, batch_size, config.nl_vocab_size), device=config.device)
-
-#         for step in range(max_decode_step):
-#             # decoder_outputs: [B, nl_vocab_size]
-#             # decoder_hidden: [1, B, H]
-#             # attn_weights: [B, 1, T]
-#             decoder_output, decoder_hidden, \
-#                 code_attn_weights, ast_attn_weights = self.decoder(inputs=decoder_inputs,
-#                                                                    last_hidden=decoder_hidden,
-#                                                                    code_outputs=code_outputs,
-#                                                                    ast_outputs=ast_outputs)
-#             decoder_outputs[step] = decoder_output
-
-#             if config.use_teacher_forcing and random.random() < config.teacher_forcing_ratio and not self.is_eval:
-#                 # use teacher forcing, ground truth to be the next input
-#                 decoder_inputs = nl_batch[step]
-#             else:
-#                 # output of last step to be the next input
-#                 _, indices = decoder_output.topk(1)  # [B, 1]
-#                 decoder_inputs = indices.squeeze(1).detach()  # [B]
-#                 decoder_inputs = decoder_inputs.to(config.device)
-
-#         return decoder_outputs
-
-#     def set_state_dict(self, state_dict):
-#         self.code_encoder.load_state_dict(state_dict["code_encoder"])
-#         self.ast_encoder.load_state_dict(state_dict["ast_encoder"])
-#         self.reduce_hidden.load_state_dict(state_dict["reduce_hidden"])
-#         self.decoder.load_state_dict(state_dict["decoder"])
-
 class Model(nn.Module):
-
-    def __init__(self, code_vocab_size, ast_vocab_size, nl_vocab_size, model_file_path=None, model_state_dict=None, is_eval=False):
+    def __init__(self, code_vocab_size, ast_vocab_size, nl_vocab_size,
+                 model_file_path=None, model_state_dict=None, is_eval=False):
         super(Model, self).__init__()
 
-        # vocabulary size for encoders
         self.code_vocab_size = code_vocab_size
         self.ast_vocab_size = ast_vocab_size
         self.is_eval = is_eval
 
-        # init models
         self.code_encoder = Encoder(self.code_vocab_size)
         self.ast_encoder = Encoder(self.ast_vocab_size)
         self.reduce_hidden = ReduceHidden()
-        self.decoder = TransformerDecoder()  # Use the new Transformer-based decoder
+        
+        # Load Pegasus
+        self.tokenizer = PegasusTokenizer.from_pretrained("google/pegasus-large")
+        self.pegasus_model = PegasusForConditionalGeneration.from_pretrained("google/pegasus-large")
 
         if config.use_cuda:
             self.code_encoder = self.code_encoder.cuda()
             self.ast_encoder = self.ast_encoder.cuda()
             self.reduce_hidden = self.reduce_hidden.cuda()
-            self.decoder = self.decoder.cuda()
+            self.pegasus_model = self.pegasus_model.cuda()
 
         if model_file_path:
             state = torch.load(model_file_path, map_location=torch.device('cuda' if config.use_cuda else 'cpu'))
@@ -366,61 +242,48 @@ class Model(nn.Module):
             self.code_encoder.eval()
             self.ast_encoder.eval()
             self.reduce_hidden.eval()
-            self.decoder.eval()
+            self.pegasus_model.eval()
 
     def forward(self, batch, batch_size, nl_vocab, is_test=False):
-        """
-        :param batch:
-        :param batch_size:
-        :param nl_vocab:
-        :param is_test: if True, function will return before decoding
-        :return: decoder_outputs: [T, B, nl_vocab_size]
-        """
-        # batch: [T, B]
         code_batch, code_seq_lens, ast_batch, ast_seq_lens, nl_batch, nl_seq_lens = batch
 
-        # encode
         code_outputs, code_hidden = self.code_encoder(code_batch, code_seq_lens)
         ast_outputs, ast_hidden = self.ast_encoder(ast_batch, ast_seq_lens)
 
-        # data for decoder
-        code_hidden = code_hidden[0] + code_hidden[1]  # [B, H]
-        code_hidden = code_hidden.unsqueeze(0)  # [1, B, H]
-        ast_hidden = ast_hidden[0] + ast_hidden[1]  # [B, H]
-        ast_hidden = ast_hidden.unsqueeze(0)  # [1, B, H]
-        decoder_hidden = self.reduce_hidden(code_hidden, ast_hidden)  # [1, B, H]
+        code_hidden = code_hidden[0] + code_hidden[1]
+        code_hidden = code_hidden.unsqueeze(0)
+        ast_hidden = ast_hidden[0] + ast_hidden[1]
+        ast_hidden = ast_hidden.unsqueeze(0)
+        decoder_hidden = self.reduce_hidden(code_hidden, ast_hidden)
 
         if is_test:
             return code_outputs, ast_outputs, decoder_hidden
 
-        if nl_seq_lens is None:
-            max_decode_step = config.max_decode_steps
-        else:
-            max_decode_step = max(nl_seq_lens)
+        # Tạo đầu vào cho Pegasus từ đầu ra của encoder
+        combined_outputs = torch.cat((code_outputs, ast_outputs), dim=0)  # [2*T, B, H]
+        combined_outputs = combined_outputs.permute(1, 0, 2)  # [B, 2*T, H]
 
-        decoder_inputs = utils.init_decoder_inputs(batch_size=batch_size, vocab=nl_vocab)  # [B]
+        # Chuyển combined_outputs thành dạng tensor Pegasus có thể sử dụng
+        attention_mask = torch.ones(combined_outputs.shape[:2], dtype=torch.long, device=config.device)
+        
+        # Pegasus generate
+        summaries = self.pegasus_model.generate(
+            inputs_embeds=combined_outputs,
+            attention_mask=attention_mask,
+            max_length=config.max_decode_steps,
+            num_beams=config.num_beams
+        )
 
-        decoder_outputs = torch.zeros((max_decode_step, batch_size, config.nl_vocab_size), device=config.device)
+        # Decode summaries thành văn bản
+        decoder_outputs = [self.tokenizer.decode(summary, skip_special_tokens=True) for summary in summaries]
 
-        for step in range(max_decode_step):
-            input_ids = decoder_inputs.unsqueeze(1)  # Convert to shape (batch_size, seq_len=1)
-            logits = self.decoder(input_ids=input_ids, encoder_hidden_states=decoder_hidden)
-            decoder_output = logits[:, -1, :]  # Get the last token's logits
-            decoder_outputs[step] = decoder_output
-
-            if config.use_teacher_forcing and random.random() < config.teacher_forcing_ratio and not self.is_eval:
-                # use teacher forcing, ground truth to be the next input
-                decoder_inputs = nl_batch[step]
-            else:
-                # output of last step to be the next input
-                _, indices = decoder_output.topk(1)  # [B, 1]
-                decoder_inputs = indices.squeeze(1).detach()  # [B]
-                decoder_inputs = decoder_inputs.to(config.device)
-
+        # Chuyển đổi các văn bản tóm tắt trở lại thành tensor
+        decoder_outputs = torch.tensor([self.tokenizer.encode(output, padding='max_length', max_length=config.max_decode_steps, truncation=True) for output in decoder_outputs], device=config.device)
+        
         return decoder_outputs
 
     def set_state_dict(self, state_dict):
         self.code_encoder.load_state_dict(state_dict["code_encoder"])
         self.ast_encoder.load_state_dict(state_dict["ast_encoder"])
         self.reduce_hidden.load_state_dict(state_dict["reduce_hidden"])
-        self.decoder.model.load_state_dict(state_dict["decoder"])
+        self.pegasus_model.load_state_dict(state_dict["pegasus_model"])

@@ -178,6 +178,7 @@ class MetaTrain(object):
         :param criterion: loss function
         :return: avg loss
         """
+        model.train()
         nl_batch = batch[4]
 
         decoder_outputs = model(batch, batch_size, self.nl_vocab)     # [T, B, nl_vocab_size]
@@ -196,6 +197,7 @@ class MetaTrain(object):
         :param criterion: loss function
         :return: avg loss
         """
+        model.eval()
         with torch.no_grad():
             nl_batch = batch[4]
 
@@ -226,7 +228,7 @@ class MetaTrain(object):
             # query_iterators = {project: iter(self.meta_dataloaders[project]['query']) for project in self.training_projects}
             # num_iteration=max([len(self.meta_dataloaders[project]['support']) for project in self.training_projects ])
             #print(f'[DEBUG] Num iteration: {num_iteration} \n')
-            num_iteration=35
+            num_iteration=40
             pbar = tqdm(range(num_iteration))
             idx=0
 
@@ -328,7 +330,7 @@ class MetaTrain(object):
         
         loss = sum(losses)/len(losses)
         print("Validation complete for epoch ",epoch," with average loss: ",loss)
-        config.logger.info("Validation complete for epoch ",epoch," with average loss: ",loss)
+        config.logger.info(f'Validation complete for epoch {epoch} with average loss: {loss}')
         if config.save_valid_model:
             model_name = 'meta_model_valid-loss-{:.4f}_epoch-{}_batch-{}.pt'.format(loss, epoch, batch)
             save_thread = threading.Thread(target=self.save_model, args=(model_name, state_dict))
