@@ -328,7 +328,7 @@ class MetaTrain(object):
         
         loss = sum(losses)/len(losses)
         print("Validation complete for epoch ",epoch," with average loss: ",loss)
-
+        config.logger.info("Validation complete for epoch ",epoch," with average loss: ",loss)
         if config.save_valid_model:
             model_name = 'meta_model_valid-loss-{:.4f}_epoch-{}_batch-{}.pt'.format(loss, epoch, batch)
             save_thread = threading.Thread(target=self.save_model, args=(model_name, state_dict))
