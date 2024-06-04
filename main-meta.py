@@ -94,7 +94,10 @@ if __name__ == '__main__':
     # training_projects=['AppScale/appscale','edx/edx-platform','sympy/sympy' ,'JiYou/openstack','IronLanguages/main','openhatch/oh-mainline','mne-tools/mne-python','cloudera/hue']
     # validating_project="ahmetcemturan/SFACT"
     # testing_project="kbengine/kbengine"
-    training_projects=['ExoPlayer','flink','guava','kafka','spring-boot','spring-framework','spring-security','open-liberty','j2objc','hadoop-20','nitro','voltdb','thredds','aws-sdk-java','BoofCV']
+    # training_projects=['ExoPlayer','flink','guava','kafka','spring-boot','spring-framework','spring-security','open-liberty','j2objc','hadoop-20','nitro','voltdb','thredds','aws-sdk-java','BoofCV']
+    # validating_project='dubbo'
+    # testing_project='dagger'
+    training_projects=['ExoPlayer','guava','kafka']
     validating_project='dubbo'
     testing_project='dagger'
         #training_projects, validating_project, testing_project = split_dataset(projects)
