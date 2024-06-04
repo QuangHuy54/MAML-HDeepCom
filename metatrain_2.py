@@ -140,6 +140,8 @@ class MetaTrain(object):
         #     {'params': self.model.module.decoder.parameters(), 'lr': config.decoder_lr},
         # ], betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
 
+        self.params=self.model.parameters()
+        self.optimizer=Adam(self.model.parameters(),lr=config.learning_rate)
 
         if config.use_lr_decay:
             self.lr_scheduler = lr_scheduler.StepLR(self.optimizer,
