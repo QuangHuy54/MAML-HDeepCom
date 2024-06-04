@@ -133,13 +133,13 @@ class MetaTrain(object):
             list(self.model.module.decoder.parameters())
 
         # optimizer
-        self.optimizer = Adam([
-            {'params': self.model.module.code_encoder.parameters(), 'lr': config.code_encoder_lr},
-            {'params': self.model.module.ast_encoder.parameters(), 'lr': config.ast_encoder_lr},
-            {'params': self.model.module.reduce_hidden.parameters(), 'lr': config.reduce_hidden_lr},
-            {'params': self.model.module.decoder.parameters(), 'lr': config.decoder_lr},
-        ], betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
-
+        # self.optimizer = Adam([
+        #     {'params': self.model.module.code_encoder.parameters(), 'lr': config.code_encoder_lr},
+        #     {'params': self.model.module.ast_encoder.parameters(), 'lr': config.ast_encoder_lr},
+        #     {'params': self.model.module.reduce_hidden.parameters(), 'lr': config.reduce_hidden_lr},
+        #     {'params': self.model.module.decoder.parameters(), 'lr': config.decoder_lr},
+        # ], betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
+        
 
         if config.use_lr_decay:
             self.lr_scheduler = lr_scheduler.StepLR(self.optimizer,
