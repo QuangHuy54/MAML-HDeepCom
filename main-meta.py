@@ -98,9 +98,9 @@ if __name__ == '__main__':
     # training_projects=['ExoPlayer','flink','guava','kafka','spring-boot','spring-framework','spring-security','open-liberty','j2objc','hadoop-20','nitro','voltdb','thredds','aws-sdk-java','BoofCV']
     # validating_project='dubbo'
     # testing_project='dagger'
-    training_projects=['ExoPlayer','guava','kafka']
-    validating_project='dubbo'
-    testing_project='dagger'
+    training_projects=['kafka', 'dubbo', 'guava']
+    validating_project='dagger'
+    testing_project='flink'
         #training_projects, validating_project, testing_project = split_dataset(projects)
     config.logger.info(f'validate: {validating_project}, testing: {testing_project}')
     best_model_dict = _train(training_projects=training_projects, \
