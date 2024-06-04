@@ -234,10 +234,10 @@ class MetaTrain(object):
             idx=0
 
             for iteration in pbar: # outer loop
-                projects=random.sample(self.training_projects, 4)
+                #projects=random.sample(self.training_projects, 4)
                 losses = []
                 self.optimizer.zero_grad() 
-                for project in projects: # inner loop
+                for project in self.training_projects: # inner loop
                     sup_batch, qry_batch = next(iter(self.meta_dataloaders[project]['support'])), next(iter(self.meta_dataloaders[project]['query']))
                     sup_batch, qry_batch=tuple_map(lambda x: x.to(config.device) if type(x) is torch.Tensor else x,(sup_batch, qry_batch))
 
