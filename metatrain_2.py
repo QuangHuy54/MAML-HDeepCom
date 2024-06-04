@@ -229,7 +229,7 @@ class MetaTrain(object):
             # query_iterators = {project: iter(self.meta_dataloaders[project]['query']) for project in self.training_projects}
             # num_iteration=max([len(self.meta_dataloaders[project]['support']) for project in self.training_projects ])
             #print(f'[DEBUG] Num iteration: {num_iteration} \n')
-            num_iteration=35
+            num_iteration=20
             pbar = tqdm(range(num_iteration))
             idx=0
 
