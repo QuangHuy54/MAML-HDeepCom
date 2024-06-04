@@ -5,11 +5,11 @@ import utils
 
 class CodePtrDataset(Dataset):
 
-    def __init__(self, code_path, ast_path, nl_path):
+    def __init__(self, code_path, ast_path, nl_path,num_of_data=-1):
         # get lines
-        codes = utils.load_dataset(code_path)
-        asts = utils.load_dataset(ast_path)
-        nls = utils.load_dataset(nl_path)
+        codes = utils.load_dataset(code_path,num_of_data)
+        asts = utils.load_dataset(ast_path,num_of_data)
+        nls = utils.load_dataset(nl_path,num_of_data)
 
         if len(codes) != len(asts) or len(codes) != len(nls) or len(asts) != len(nls):
             raise Exception('The lengths of three dataset do not match.')

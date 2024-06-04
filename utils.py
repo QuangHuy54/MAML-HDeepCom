@@ -159,7 +159,7 @@ def get_timestamp():
     return time.strftime('%Y%m%d_%H%M%S', time.localtime())
 
 
-def load_dataset(dataset_path) -> list:
+def load_dataset(dataset_path,num_of_data=-1) -> list:
     """
     load the dataset from given path
     :param dataset_path: path of dataset
@@ -170,8 +170,13 @@ def load_dataset(dataset_path) -> list:
         for line in file.readlines():
             words = line.strip().split(' ')
             lines.append(words)
-    return lines
-
+    if num_of_data==-1:
+        return lines
+    else:
+        # sidx = np.random.permutation(len(lines))
+        # ele_pos=sidx[:num_of_data]
+        # return [lines[i] for i in ele_pos]
+        return lines[:num_of_data]
 
 def filter_data(codes, asts, nls):
     """

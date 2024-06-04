@@ -21,7 +21,8 @@ class Train(object):
                                                  nl_path=config.train_nl_path,
                                                  code_valid_path=config.valid_code_path,
                                                  ast_valid_path=config.valid_sbt_path,
-                                                 nl_valid_path=config.valid_nl_path,batch_size=config.batch_size):
+                                                 nl_valid_path=config.valid_nl_path,batch_size=config.batch_size
+                                                 ,num_of_data=-1):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -31,7 +32,7 @@ class Train(object):
         # dataset
         self.train_dataset = data.CodePtrDataset(code_path,
                                                  ast_path,
-                                                 nl_path)
+                                                 nl_path,num_of_data)
         self.train_dataset_size = len(self.train_dataset)
         self.train_dataloader = DataLoader(dataset=self.train_dataset,
                                            batch_size=batch_size,
