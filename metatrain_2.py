@@ -311,10 +311,7 @@ class MetaTrain(object):
         :return:
         """
         state_dict = {
-                'code_encoder': self.model.module.code_encoder.state_dict(),
-                'ast_encoder': self.model.module.ast_encoder.state_dict(),
-                'reduce_hidden': self.model.module.reduce_hidden.state_dict(),
-                'decoder': self.model.module.decoder.state_dict(),
+                'model': self.model.state_dict(),
                 'optimizer': self.optimizer.state_dict(),
             }
         return state_dict

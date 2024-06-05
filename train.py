@@ -267,10 +267,7 @@ class Train(object):
         :return:
         """
         state_dict = {
-                'code_encoder': self.model.code_encoder.state_dict(),
-                'ast_encoder': self.model.ast_encoder.state_dict(),
-                'reduce_hidden': self.model.reduce_hidden.state_dict(),
-                'decoder': self.model.decoder.state_dict(),
+                'model': self.model.state_dict(),
                 'optimizer': self.optimizer.state_dict(),
             }
         return state_dict
