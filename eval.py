@@ -101,7 +101,7 @@ class Eval(object):
         return avg_loss
 
     def set_state_dict(self, state_dict):
-        self.model.set_state_dict(state_dict)
+        self.model.load_state_dict(state_dict)
 
 
 class BeamNode(object):

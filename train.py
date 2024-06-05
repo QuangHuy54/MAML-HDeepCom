@@ -273,7 +273,7 @@ class Train(object):
         return state_dict
 
     def valid_state_dict(self, state_dict, epoch, batch=-1):
-        self.eval_instance.set_state_dict(state_dict)
+        self.eval_instance.set_state_dict(state_dict["model"])
         loss = self.eval_instance.run_eval()
 
         if config.save_valid_model:
