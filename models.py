@@ -232,10 +232,10 @@ class Model(nn.Module):
 
         if model_file_path:
             state = torch.load(model_file_path,map_location=torch.device('cuda' if config.use_cuda else 'cpu'))
-            self.load_state_dict(state)
+            self.load_state_dict(state["model"])
 
         if model_state_dict:
-            self.load_state_dict(model_state_dict)
+            self.load_state_dict(model_state_dict["model"])
 
         if is_eval:
             self.code_encoder.eval()
