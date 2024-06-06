@@ -40,15 +40,15 @@ class MetaTrain(object):
         self.meta_datasets = {}
         for project in (training_projects + [validating_project]):
             self.meta_datasets[project]={
-                "support": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/train.code'),
-                                                ast_path=os.path.join(dataset_dir,f'{project}/train.sbt'),
-                                                nl_path=os.path.join(dataset_dir,f'{project}/train.comment')),
+                "support": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/all.code'),
+                                                ast_path=os.path.join(dataset_dir,f'{project}/all.sbt'),
+                                                nl_path=os.path.join(dataset_dir,f'{project}/all.comment')),
                 "query": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/valid.code'),
                                                 ast_path=os.path.join(dataset_dir,f'{project}/valid.sbt'),
                                                 nl_path=os.path.join(dataset_dir,f'{project}/valid.comment'))
             }
         
-        self.meta_datasets_size = sum([(len(dataset['support']) + len(dataset['query'])) for dataset in self.meta_datasets.values()])
+        self.meta_datasets_size = sum([(len(dataset['support'])) for dataset in self.meta_datasets.values()])
 
         self.meta_dataloaders = {}
         for project in training_projects:
@@ -240,7 +240,9 @@ class MetaTrain(object):
                 losses = []
                 self.optimizer.zero_grad() 
                 for project in self.training_projects: # inner loop
-                    sup_batch, qry_batch = next(iter(self.meta_dataloaders[project]['support'])), next(iter(self.meta_dataloaders[project]['query']))
+                    sup_iter=iter(self.meta_dataloaders[project]['support'])
+                    sup_batch = next(sup_iter) 
+                    qry_batch = next(sup_iter)
                     sup_batch, qry_batch=tuple_map(lambda x: x.to(config.device) if type(x) is torch.Tensor else x,(sup_batch, qry_batch))
 
                     # try:
