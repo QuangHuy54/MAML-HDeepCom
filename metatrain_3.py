@@ -40,9 +40,9 @@ class MetaTrain(object):
         self.meta_datasets = {}
         for project in (training_projects + [validating_project]):
             self.meta_datasets[project]={
-                "support": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/all.code'),
-                                                ast_path=os.path.join(dataset_dir,f'{project}/all.sbt'),
-                                                nl_path=os.path.join(dataset_dir,f'{project}/all.comment')),
+                "support": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/all_truncated.code'),
+                                                ast_path=os.path.join(dataset_dir,f'{project}/all_truncated.sbt'),
+                                                nl_path=os.path.join(dataset_dir,f'{project}/all_truncated.comment')),
                 "query": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/valid.code'),
                                                 ast_path=os.path.join(dataset_dir,f'{project}/valid.sbt'),
                                                 nl_path=os.path.join(dataset_dir,f'{project}/valid.comment'))
