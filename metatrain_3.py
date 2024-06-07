@@ -81,7 +81,6 @@ class MetaTrain(object):
                                                                                             nl_vocab=self.nl_vocab,
                                                                                             toDevice=False))
             }
-        self.eval_instance = eval.Eval(self.get_cur_state_dict(),code_path=code_valid_path,ast_path=ast_valid_path,nl_path=nl_valid_path)
         # vocab
         self.code_vocab: utils.Vocab
         self.ast_vocab: utils.Vocab
