@@ -98,7 +98,7 @@ if __name__ == '__main__':
     # training_projects=['ExoPlayer','flink','guava','kafka','spring-boot','spring-framework','spring-security','open-liberty','j2objc','hadoop-20','nitro','voltdb','thredds','aws-sdk-java','BoofCV']
     # validating_project='dubbo'
     # testing_project='dagger'
-    training_projects=['kafka', 'dubbo', 'guava']
+    training_projects=['dubbo','ExoPlayer','guava','kafka','spring-boot','spring-framework','spring-security']
     validating_project='dagger'
     testing_project='flink'
         #training_projects, validating_project, testing_project = split_dataset(projects)
