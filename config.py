@@ -97,7 +97,7 @@ vocab_min_count = 5
 code_vocab_size = 35000  # 30000
 nl_vocab_size = 15000    # 30000
 
-learning_rate=0.001
+learning_rate=0.0005
 embedding_dim = 256
 hidden_size = 256
 decoder_dropout_rate = 0.5
@@ -106,7 +106,7 @@ batch_size = 16     # 128
 code_encoder_lr = 0.001
 ast_encoder_lr = 0.001
 reduce_hidden_lr = 0.001
-decoder_lr = 0.001
+decoder_lr = 0.0001
 lr_decay_every = 1
 lr_decay_rate = 0.99
 n_epochs = 30    # 50
