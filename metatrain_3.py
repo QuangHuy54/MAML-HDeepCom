@@ -121,11 +121,11 @@ class MetaTrain(object):
         self.nl_vocab_size = len(self.nl_vocab)
 
         # model
-        model = models.Model(code_vocab_size=self.code_vocab_size,
+        self.model = models.Model(code_vocab_size=self.code_vocab_size,
                             ast_vocab_size=self.ast_vocab_size,
                             nl_vocab_size=self.nl_vocab_size,
                             model_file_path=model_file_path)
-        self.model=l2l.algorithms.MAML(model, lr=0.1)
+        self.maml=l2l.algorithms.MAML(self.model, lr=0.1)
         # self.params = list(self.model.module.code_encoder.parameters()) + \
         #     list(self.model.module.ast_encoder.parameters()) + \
         #     list(self.model.module.reduce_hidden.parameters()) + \
@@ -139,8 +139,9 @@ class MetaTrain(object):
         #     {'params': self.model.module.decoder.parameters(), 'lr': config.decoder_lr},
         # ], betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
 
-        self.params=self.model.parameters()
-        self.optimizer=Adam(self.model.parameters(),lr=config.learning_rate)
+        self.params=self.maml.parameters()
+        self.optimizer=Adam(self.maml.parameters(),lr=config.learning_rate)
+        self.eval_instance = eval.Eval(self.get_cur_state_dict(),code_path=f'../dataset_v2/original/{validating_project}/valid_transfer.code',ast_path=f'../dataset_v2/original/{validating_project}/valid_transfer.sbt',nl_path=f'../dataset_v2/original/{validating_project}/valid_transfer.comment')
 
         if config.use_lr_decay:
             self.lr_scheduler = lr_scheduler.StepLR(self.optimizer,
@@ -257,7 +258,7 @@ class MetaTrain(object):
                     batch_size_qry=len(qry_batch[0][0])
                     #print(f'[DEBUG] Batch size sup: {batch_size_sup}, Batch size query: {batch_size_qry} \n')
 
-                    task_model = self.model.clone()
+                    task_model = self.maml.clone()
                     for _ in range(inner_train_steps):
                         adaptation_loss=self.run_one_batch(task_model,sup_batch,batch_size_sup,self.criterion)
                         task_model.adapt(adaptation_loss) 
@@ -312,25 +313,26 @@ class MetaTrain(object):
         :return:
         """
         state_dict = {
-                'model': self.model.module.state_dict(),
+                'model': self.model.state_dict(),
                 'optimizer': self.optimizer.state_dict(),
             }
         return state_dict
 
     def valid_state_dict(self, state_dict, epoch, batch=-1):
         # Clone for valid task
-
+        self.eval_instance.set_state_dict(state_dict["model"])
+        loss = self.eval_instance.run_eval()
         # adapt
-        losses = []
-        for batch_s,batch_q in zip(self.meta_dataloaders[self.validating_project]['support'],self.meta_dataloaders[self.validating_project]['query']):
-            task_model = self.model.clone()
-            batch_sc,batch_qc=tuple_map(lambda x: x.to(config.device) if type(x) is torch.Tensor else x,(batch_s,batch_q))
-            adaptation_loss=self.run_one_batch(task_model,batch_sc,len(batch_s[0][0]),self.criterion)
-            task_model.adapt(adaptation_loss)
-            losses.append(self.eval_one_batch(task_model,batch_qc,len(batch_q[0][0]),self.criterion).item())
+        # losses = []
+        # for batch_s,batch_q in zip(self.meta_dataloaders[self.validating_project]['support'],self.meta_dataloaders[self.validating_project]['query']):
+        #     task_model = self.maml.clone()
+        #     batch_sc,batch_qc=tuple_map(lambda x: x.to(config.device) if type(x) is torch.Tensor else x,(batch_s,batch_q))
+        #     adaptation_loss=self.run_one_batch(task_model,batch_sc,len(batch_s[0][0]),self.criterion)
+        #     task_model.adapt(adaptation_loss)
+        #     losses.append(self.eval_one_batch(task_model,batch_qc,len(batch_q[0][0]),self.criterion).item())
 
         
-        loss = sum(losses)/len(losses)
+        # loss = sum(losses)/len(losses)
         print("Validation complete for epoch ",epoch," with average loss: ",loss)
         config.logger.info(f'Validation complete for epoch {epoch} with average loss: {loss}')
         if config.save_valid_model:
