@@ -346,7 +346,7 @@ class MetaTrain(object):
             losses.append(self.eval_one_batch(task_model,batch_qc,len(batch_q[0][0]),self.criterion).item())
 
         
-        # loss = sum(losses)/len(losses)
+        loss = sum(losses)/len(losses)
         print("Validation complete for epoch ",epoch," with average loss: ",loss)
         config.logger.info(f'Validation complete for epoch {epoch} with average loss: {loss}')
         if config.save_valid_model:
