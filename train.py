@@ -93,7 +93,8 @@ class Train(object):
         #     list(self.model.reduce_hidden.parameters()) + \
         #     list(self.model.decoder.parameters())
         self.params=self.model.parameters()
-
+        pytorch_total_params = sum(p.numel() for p in self.params if p.requires_grad)
+        print("Total trainable parameter: ",pytorch_total_params)
         # optimizer
         # self.optimizer = Adam([
         #     {'params': self.model.code_encoder.parameters(), 'lr': config.code_encoder_lr},

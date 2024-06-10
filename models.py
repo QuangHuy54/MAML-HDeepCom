@@ -186,7 +186,7 @@ class Decoder(nn.Module):
                 attn_weights: [B, 1, T]
         """
         embedded = self.embedding(inputs).unsqueeze(0)      # [1, B, embedding_dim]
-        embedded = self.dropout(embedded)
+        #embedded = self.dropout(embedded)
 
         code_attn_weights = self.code_attention(last_hidden, code_outputs)  # [B, 1, T]
         code_context = code_attn_weights.bmm(code_outputs.transpose(0, 1))  # [B, 1, H]

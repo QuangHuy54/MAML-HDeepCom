@@ -69,13 +69,13 @@ class MetaTrain(object):
             }
         
         self.meta_dataloaders[validating_project] = {
-                'support': DataLoader(dataset=self.meta_datasets[validating_project]['support'], batch_size=config.support_batch_size, shuffle=False,
+                'support': DataLoader(dataset=self.meta_datasets[validating_project]['support'], batch_size=config.support_batch_size, shuffle=True,
                                            collate_fn=lambda *args: utils.unsort_collate_fn(args,
                                                                                             code_vocab=self.code_vocab,
                                                                                             ast_vocab=self.ast_vocab,
                                                                                             nl_vocab=self.nl_vocab,
                                                                                             toDevice=False)),
-                'query': DataLoader(dataset=self.meta_datasets[validating_project]['query'], batch_size=config.query_batch_size, shuffle=False,
+                'query': DataLoader(dataset=self.meta_datasets[validating_project]['query'], batch_size=config.query_batch_size, shuffle=True,
                                            collate_fn=lambda *args: utils.unsort_collate_fn(args,
                                                                                             code_vocab=self.code_vocab,
                                                                                             ast_vocab=self.ast_vocab,
@@ -324,26 +324,26 @@ class MetaTrain(object):
         # self.eval_instance.set_state_dict(state_dict["model"])
         # loss = self.eval_instance.run_eval()
         # adapt
-        dataset_dir = "../dataset_v2/"
-        train_instance = train.Train(vocab_file_path=self.vocab_file_path, model_state_dict=state_dict,
-                                    code_path=os.path.join(dataset_dir,f'original/{self.validating_project}/train.code')
-                                    ,ast_path=os.path.join(dataset_dir,f'original/{self.validating_project}/train.sbt'),
-                                    nl_path=os.path.join(dataset_dir,f'original/{self.validating_project}/train.comment'),batch_size=config.support_batch_size,
-                                    code_valid_path=f'../dataset_v2/original/{self.validating_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{self.validating_project}/valid_transfer.comment',
-                                        ast_valid_path=f'../dataset_v2/original/{self.validating_project}/valid_transfer.sbt'
-                                        ,save_file=False)
-        best_model_test_dict=train_instance.run_train()
-        eval_instance = eval.Eval(best_model_test_dict,code_path=os.path.join(dataset_dir,f'original/{self.validating_project}/valid.code')
-                                ,ast_path=os.path.join(dataset_dir,f'original/{self.validating_project}/valid.sbt'),
-                                nl_path=os.path.join(dataset_dir,f'original/{self.validating_project}/valid.comment'))
-        loss = eval_instance.run_eval()
-        # losses = []
-        # for batch_s,batch_q in zip(self.meta_dataloaders[self.validating_project]['support'],self.meta_dataloaders[self.validating_project]['query']):
-        #     task_model = self.maml.clone()
-        #     batch_sc,batch_qc=tuple_map(lambda x: x.to(config.device) if type(x) is torch.Tensor else x,(batch_s,batch_q))
-        #     adaptation_loss=self.run_one_batch(task_model,batch_sc,len(batch_s[0][0]),self.criterion)
-        #     task_model.adapt(adaptation_loss)
-        #     losses.append(self.eval_one_batch(task_model,batch_qc,len(batch_q[0][0]),self.criterion).item())
+        # dataset_dir = "../dataset_v2/"
+        # train_instance = train.Train(vocab_file_path=self.vocab_file_path, model_state_dict=state_dict,
+        #                             code_path=os.path.join(dataset_dir,f'original/{self.validating_project}/train.code')
+        #                             ,ast_path=os.path.join(dataset_dir,f'original/{self.validating_project}/train.sbt'),
+        #                             nl_path=os.path.join(dataset_dir,f'original/{self.validating_project}/train.comment'),batch_size=config.support_batch_size,
+        #                             code_valid_path=f'../dataset_v2/original/{self.validating_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{self.validating_project}/valid_transfer.comment',
+        #                                 ast_valid_path=f'../dataset_v2/original/{self.validating_project}/valid_transfer.sbt'
+        #                                 ,save_file=False)
+        # best_model_test_dict=train_instance.run_train()
+        # eval_instance = eval.Eval(best_model_test_dict,code_path=os.path.join(dataset_dir,f'original/{self.validating_project}/valid.code')
+        #                         ,ast_path=os.path.join(dataset_dir,f'original/{self.validating_project}/valid.sbt'),
+        #                         nl_path=os.path.join(dataset_dir,f'original/{self.validating_project}/valid.comment'))
+        # loss = eval_instance.run_eval()
+        losses = []
+        for batch_s,batch_q in zip(self.meta_dataloaders[self.validating_project]['support'],self.meta_dataloaders[self.validating_project]['query']):
+            task_model = self.maml.clone()
+            batch_sc,batch_qc=tuple_map(lambda x: x.to(config.device) if type(x) is torch.Tensor else x,(batch_s,batch_q))
+            adaptation_loss=self.run_one_batch(task_model,batch_sc,len(batch_s[0][0]),self.criterion)
+            task_model.adapt(adaptation_loss)
+            losses.append(self.eval_one_batch(task_model,batch_qc,len(batch_q[0][0]),self.criterion).item())
 
         
         # loss = sum(losses)/len(losses)
