@@ -333,10 +333,10 @@ class MetaTrain(object):
                                         ast_valid_path=f'../dataset_v2/original/{self.validating_project}/valid_transfer.sbt'
                                         ,save_file=False)
         best_model_test_dict=train_instance.run_train()
-        eval_instance = eval.Eval(self.get_cur_state_dict(),code_path=os.path.join(dataset_dir,f'original/{self.validating_project}/valid.code')
+        temp_dict={'model':best_model_test_dict}
+        eval_instance = eval.Eval(temp_dict,code_path=os.path.join(dataset_dir,f'original/{self.validating_project}/valid.code')
                                 ,ast_path=os.path.join(dataset_dir,f'original/{self.validating_project}/valid.sbt'),
                                 nl_path=os.path.join(dataset_dir,f'original/{self.validating_project}/valid.comment'))
-        eval_instance.set_state_dict(best_model_test_dict)
         loss = eval_instance.run_eval()
         # losses = []
         # for batch_s,batch_q in zip(self.meta_dataloaders[self.validating_project]['support'],self.meta_dataloaders[self.validating_project]['query']):
