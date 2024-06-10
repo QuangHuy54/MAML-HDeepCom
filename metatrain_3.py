@@ -15,6 +15,7 @@ import models
 import eval
 from tqdm import tqdm
 import learn2learn as l2l
+import train
 
 def tuple_map(fn, t, **kwargs):
     if t is None:
@@ -34,7 +35,7 @@ class MetaTrain(object):
 
         self.training_projects = training_projects
         self.validating_project = validating_project
-
+        self.vocab_file_path=vocab_file_path
         # dataset
         dataset_dir = "../dataset_v2/original/"
         self.meta_datasets = {}
@@ -215,7 +216,7 @@ class MetaTrain(object):
 
     def train_iter(self,train_steps=12000, inner_train_steps=1, 
               valid_steps=200, inner_valid_steps=4, 
-              valid_every=5, eval_start=0, early_stop=50, epoch_number=50):
+              valid_every=5, eval_start=0, early_stop=50, epoch_number=12000):
 
         self.criterion = nn.NLLLoss(ignore_index=utils.get_pad_index(self.nl_vocab))
 
@@ -231,7 +232,7 @@ class MetaTrain(object):
             # query_iterators = {project: iter(self.meta_dataloaders[project]['query']) for project in self.training_projects}
             # num_iteration=max([len(self.meta_dataloaders[project]['support']) for project in self.training_projects ])
             #print(f'[DEBUG] Num iteration: {num_iteration} \n')
-            num_iteration=20
+            num_iteration=50
             pbar = tqdm(range(num_iteration))
             idx=0
 
@@ -320,9 +321,23 @@ class MetaTrain(object):
 
     def valid_state_dict(self, state_dict, epoch, batch=-1):
         # Clone for valid task
-        self.eval_instance.set_state_dict(state_dict["model"])
-        loss = self.eval_instance.run_eval()
+        # self.eval_instance.set_state_dict(state_dict["model"])
+        # loss = self.eval_instance.run_eval()
         # adapt
+        dataset_dir = "../dataset_v2/"
+        train_instance = train.Train(vocab_file_path=self.vocab_file_path, model_state_dict=state_dict["model"],
+                                    code_path=os.path.join(dataset_dir,f'original/{self.validating_project}/train.code')
+                                    ,ast_path=os.path.join(dataset_dir,f'original/{self.validating_project}/train.sbt'),
+                                    nl_path=os.path.join(dataset_dir,f'original/{self.validating_project}/train.comment'),batch_size=config.support_batch_size,
+                                    code_valid_path=f'../dataset_v2/original/{self.validating_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{self.validating_project}/valid_transfer.comment',
+                                        ast_valid_path=f'../dataset_v2/original/{self.validating_project}/valid_transfer.sbt'
+                                        ,save_file=False)
+        best_model_test_dict=train_instance.run_train()
+        eval_instance = eval.Eval(self.get_cur_state_dict(),code_path=os.path.join(dataset_dir,f'original/{self.validating_project}/valid.code')
+                                ,ast_path=os.path.join(dataset_dir,f'original/{self.validating_project}/valid.sbt'),
+                                nl_path=os.path.join(dataset_dir,f'original/{self.validating_project}/valid.comment'))
+        eval_instance.set_state_dict(best_model_test_dict)
+        loss = eval_instance.run_eval()
         # losses = []
         # for batch_s,batch_q in zip(self.meta_dataloaders[self.validating_project]['support'],self.meta_dataloaders[self.validating_project]['query']):
         #     task_model = self.maml.clone()

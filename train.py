@@ -22,7 +22,7 @@ class Train(object):
                                                  code_valid_path=config.valid_code_path,
                                                  ast_valid_path=config.valid_sbt_path,
                                                  nl_valid_path=config.valid_nl_path,batch_size=config.batch_size
-                                                 ,num_of_data=-1):
+                                                 ,num_of_data=-1,save_file=True):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -30,6 +30,7 @@ class Train(object):
         """
 
         # dataset
+        self.salf_file=save_file
         self.train_dataset = data.CodePtrDataset(code_path,
                                                  ast_path,
                                                  nl_path,num_of_data)
@@ -238,7 +239,7 @@ class Train(object):
         utils.save_pickle(plot_losses, os.path.join(config.out_dir, 'plot_losses_{}.pk'.format(utils.get_timestamp())))
 
         # save the best model
-        if config.save_best_model:
+        if config.save_best_model and self.salf_file:
             best_model_name = 'best_epoch-{}_batch-{}.pt'.format(
                 self.best_epoch_batch[0], self.best_epoch_batch[1] if self.best_epoch_batch[1] != -1 else 'last')
             self.save_model(name=best_model_name, state_dict=self.best_model)
@@ -276,7 +277,7 @@ class Train(object):
         self.eval_instance.set_state_dict(state_dict["model"])
         loss = self.eval_instance.run_eval()
 
-        if config.save_valid_model:
+        if config.save_valid_model and self.salf_file:
             model_name = 'model_valid-loss-{:.4f}_epoch-{}_batch-{}.pt'.format(loss, epoch, batch)
             save_thread = threading.Thread(target=self.save_model, args=(model_name, state_dict))
             save_thread.start()
