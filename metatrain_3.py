@@ -325,7 +325,7 @@ class MetaTrain(object):
         # loss = self.eval_instance.run_eval()
         # adapt
         dataset_dir = "../dataset_v2/"
-        train_instance = train.Train(vocab_file_path=self.vocab_file_path, model_state_dict=state_dict["model"],
+        train_instance = train.Train(vocab_file_path=self.vocab_file_path, model_state_dict=state_dict,
                                     code_path=os.path.join(dataset_dir,f'original/{self.validating_project}/train.code')
                                     ,ast_path=os.path.join(dataset_dir,f'original/{self.validating_project}/train.sbt'),
                                     nl_path=os.path.join(dataset_dir,f'original/{self.validating_project}/train.comment'),batch_size=config.support_batch_size,
