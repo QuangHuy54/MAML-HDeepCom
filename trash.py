@@ -2,7 +2,7 @@ from thefuzz import fuzz
 
 projects=['dagger','dubbo','ExoPlayer','flink','guava','kafka','spring-boot','spring-framework','spring-security']
 w_2=open(f'../data_RQ3/train/train.token.code', 'r').readlines()
-w_1=open(f'../dataset_v2/original/all_truncated_final.code', 'r').readlines()
+w_1=open(f'../dataset_v2/original/all_truncated.code', 'r').readlines()
 w_3=open(f'../dataset_v2/original/all_truncated.sbt', 'r').readlines()
 w_4=open(f'../data_RQ3/train/train.token.ast', 'r').readlines()
 sum=0
