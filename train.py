@@ -93,8 +93,8 @@ class Train(object):
         #     list(self.model.reduce_hidden.parameters()) + \
         #     list(self.model.decoder.parameters())
         self.params=self.model.parameters()
-        pytorch_total_params = sum(p.numel() for p in self.params if p.requires_grad)
-        print("Total trainable parameter: ",pytorch_total_params)
+        # pytorch_total_params = sum(p.numel() for p in self.params if p.requires_grad)
+        # print("Total trainable parameter: ",pytorch_total_params)
         # optimizer
         # self.optimizer = Adam([
         #     {'params': self.model.code_encoder.parameters(), 'lr': config.code_encoder_lr},
@@ -176,7 +176,11 @@ class Train(object):
             for index_batch, batch in enumerate(self.train_dataloader):
 
                 batch_size = len(batch[0][0])
-
+                for element in batch:
+                    if type(element) is torch.Tensor:
+                        print(element.shape)
+                    else:
+                        print(element)
                 loss = self.train_one_batch(batch, batch_size, criterion)
                 print_loss += loss.item()
                 plot_loss += loss.item()

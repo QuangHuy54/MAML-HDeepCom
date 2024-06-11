@@ -23,7 +23,9 @@ def _train(vocab_file_path=None, model_file_path=None):
         print('Model will be created by program.')
 
     print('\nInitializing the training environments......\n')
-    train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model_file_path)
+    train_instance = train.Train(vocab_file_path=("../data_RQ3/vocab.code", "../data_RQ3/vocab.ast", "../data_RQ3/vocab.ast"), model_file_path=model_file_path,code_path="../data_RQ3/train/train.token.code",nl_path="../data_RQ3/train/train.token.nl"
+                                 ,ast_path="../data_RQ3/train/train.token.ast",code_valid_path="../data_RQ3/valid/valid.token.code",nl_valid_path="../data_RQ3/valid/valid.token.nl"
+                                 ,ast_valid_path="../data_RQ3/valid/valid.token.ast")
     print('Environments built successfully.\n')
     print('Size of train dataset:', train_instance.train_dataset_size)
 
