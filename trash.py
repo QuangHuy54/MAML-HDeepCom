@@ -34,10 +34,13 @@ list_range=get_range(346327,23)
 for i in range(23):
     start,end=list_range[i]
     p=multiprocessing.Process(target=get_delete,args=(start,end,))
+    print("Run process ",i)
     p.start()
     list_process.append(p)
 for i in range(23):
     list_process[i].join() 
+    print("Finish process ",i)
+
 
 w_5=open(f'../data_RQ3/train/delete.txt', 'w')
 for element in delete_one:
