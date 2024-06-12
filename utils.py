@@ -103,7 +103,7 @@ class Vocab(object):
     def __len__(self):
         return self.num_words
 
-    def load_txt(path):
+    def load_txt(self,path):
         with open(path,'r') as f1:
             for line in f1.readlines():
                 word=line.replace('\n','')
