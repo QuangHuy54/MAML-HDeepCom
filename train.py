@@ -184,11 +184,6 @@ class Train(object):
             for index_batch, batch in enumerate(self.train_dataloader):
 
                 batch_size = len(batch[0][0])
-                for element in batch:
-                    if type(element) is torch.Tensor:
-                        print(element.shape)
-                    else:
-                        print(element)
                 loss = self.train_one_batch(batch, batch_size, criterion)
                 print_loss += loss.item()
                 plot_loss += loss.item()
