@@ -143,16 +143,13 @@ class EarlyStopping(object):
             self.counter = 0
 
 
-def load_vocab_pk(file_name,exact_vocab) -> Vocab:
+def load_vocab_pk(file_name) -> Vocab:
     """
     load pickle file by given file name
     :param file_name:
     :return:
     """
-    if exact_vocab==False:
-        path = os.path.join(config.vocab_dir, file_name)
-    else:
-        path=file_name
+    path = os.path.join(config.vocab_dir, file_name)
     with open(path, 'rb') as f:
         vocab = pickle.load(f)
     if not isinstance(vocab, Vocab):
