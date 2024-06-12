@@ -126,7 +126,7 @@ class MetaTrain(object):
                             ast_vocab_size=self.ast_vocab_size,
                             nl_vocab_size=self.nl_vocab_size,
                             model_file_path=model_file_path)
-        self.maml=l2l.algorithms.MAML(self.model, lr=0.1)
+        self.maml=l2l.algorithms.MAML(self.model, lr=0.005)
         # self.params = list(self.model.module.code_encoder.parameters()) + \
         #     list(self.model.module.ast_encoder.parameters()) + \
         #     list(self.model.module.reduce_hidden.parameters()) + \
@@ -214,7 +214,7 @@ class MetaTrain(object):
 
             return loss
 
-    def train_iter(self,train_steps=12000, inner_train_steps=1, 
+    def train_iter(self,train_steps=12000, inner_train_steps=3, 
               valid_steps=200, inner_valid_steps=4, 
               valid_every=5, eval_start=0, early_stop=50, epoch_number=12000):
 
@@ -256,7 +256,7 @@ class MetaTrain(object):
                     #     sup_batch = next(support_iterators[project])
                     #     qry_batch = next(query_iterators[project])
                     batch_size_sup = len(sup_batch[0][0])
-                    batch_size_qry=len(qry_batch[0][0])
+                    batch_size_qry = len(qry_batch[0][0])
                     #print(f'[DEBUG] Batch size sup: {batch_size_sup}, Batch size query: {batch_size_qry} \n')
 
                     task_model = self.maml.clone()
@@ -274,8 +274,8 @@ class MetaTrain(object):
                         epoch + 1, epoch_number,iteration+1 , num_iteration, np.mean(losses)))
                 idx+=1
 
-            if config.use_lr_decay:
-                self.lr_scheduler.step()
+            # if config.use_lr_decay:
+            #     self.lr_scheduler.step()
                 
             # validation
             if epoch >= eval_start:
@@ -345,7 +345,6 @@ class MetaTrain(object):
             task_model.adapt(adaptation_loss)
             losses.append(self.eval_one_batch(task_model,batch_qc,len(batch_q[0][0]),self.criterion).item())
 
-        
         loss = sum(losses)/len(losses)
         print("Validation complete for epoch ",epoch," with average loss: ",loss)
         config.logger.info(f'Validation complete for epoch {epoch} with average loss: {loss}')
