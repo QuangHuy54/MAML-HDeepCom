@@ -50,9 +50,17 @@ class Train(object):
         # load vocab from given path
         if vocab_file_path:
             code_vocab_path, ast_vocab_path, nl_vocab_path = vocab_file_path
-            self.code_vocab = utils.load_vocab_pk(code_vocab_path,exact_vocab)
-            self.ast_vocab = utils.load_vocab_pk(ast_vocab_path,exact_vocab)
-            self.nl_vocab = utils.load_vocab_pk(nl_vocab_path,exact_vocab)
+            if exact_vocab:
+                self.code_vocab = utils.Vocab('code_vocab')
+                self.ast_vocab = utils.Vocab('ast_vocab')
+                self.nl_vocab = utils.Vocab('nl_vocab') 
+                self.code_vocab.load_txt(code_vocab_path)
+                self.ast_vocab.load_txt(ast_vocab_path)
+                self.nl_vocab.load_txt(nl_vocab_path) 
+            else:
+                self.code_vocab = utils.load_vocab_pk(code_vocab_path,exact_vocab)
+                self.ast_vocab = utils.load_vocab_pk(ast_vocab_path,exact_vocab)
+                self.nl_vocab = utils.load_vocab_pk(nl_vocab_path,exact_vocab)
         # new vocab
         else:
             self.code_vocab = utils.Vocab('code_vocab')
