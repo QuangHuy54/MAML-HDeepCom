@@ -123,7 +123,7 @@ class Train(object):
         self.best_epoch_batch: (int, int) = (None, None)
 
         # eval instance
-        self.eval_instance = eval.Eval(self.get_cur_state_dict(),code_path=code_valid_path,ast_path=ast_valid_path,nl_path=nl_valid_path)
+        self.eval_instance = eval.Eval(self.get_cur_state_dict(),code_path=code_valid_path,ast_path=ast_valid_path,nl_path=nl_valid_path,vocab_path=vocab_file_path)
 
         # early stopping
         self.early_stopping = None
