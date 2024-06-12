@@ -85,16 +85,16 @@ save_test_details = True
 
 
 # limitations
-max_code_length = 353
-max_nl_length = 23
+max_code_length = 200
+max_nl_length = 30
 min_nl_length = 4
 max_decode_steps = 30
-early_stopping_patience = 10
+early_stopping_patience = 5
 
 
 # hyperparameters
 vocab_min_count = 5
-code_vocab_size = 30000  # 30000
+code_vocab_size = 50000  # 30000
 nl_vocab_size = 30000    # 30000
 
 learning_rate=0.0005
@@ -109,7 +109,7 @@ reduce_hidden_lr = 0.001
 decoder_lr = 0.0001
 lr_decay_every = 1
 lr_decay_rate = 0.99
-n_epochs = 30    # 50
+n_epochs = 50    # 50
 support_batch_size=16
 query_batch_size=16
 beam_width = 5
