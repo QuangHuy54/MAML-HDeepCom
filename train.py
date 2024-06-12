@@ -22,7 +22,7 @@ class Train(object):
                                                  code_valid_path=config.valid_code_path,
                                                  ast_valid_path=config.valid_sbt_path,
                                                  nl_valid_path=config.valid_nl_path,batch_size=config.batch_size
-                                                 ,num_of_data=-1,save_file=True):
+                                                 ,num_of_data=-1,save_file=True,exact_vocab=False):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -50,9 +50,9 @@ class Train(object):
         # load vocab from given path
         if vocab_file_path:
             code_vocab_path, ast_vocab_path, nl_vocab_path = vocab_file_path
-            self.code_vocab = utils.load_vocab_pk(code_vocab_path)
-            self.ast_vocab = utils.load_vocab_pk(ast_vocab_path)
-            self.nl_vocab = utils.load_vocab_pk(nl_vocab_path)
+            self.code_vocab = utils.load_vocab_pk(code_vocab_path,exact_vocab)
+            self.ast_vocab = utils.load_vocab_pk(ast_vocab_path,exact_vocab)
+            self.nl_vocab = utils.load_vocab_pk(nl_vocab_path,exact_vocab)
         # new vocab
         else:
             self.code_vocab = utils.Vocab('code_vocab')
