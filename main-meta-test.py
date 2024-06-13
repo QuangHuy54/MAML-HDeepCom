@@ -56,13 +56,22 @@ def _train(training_projects,validating_project,vocab_file_path=None, model_file
 
 def _test(model,vocab_file_path,testing_project,num_of_data=-1):
     dataset_dir = "../dataset_v2/"
-    train_instance = train.Train(vocab_file_path=vocab_file_path, model_state_dict=model,
-                                 code_path=os.path.join(dataset_dir,f'original/{testing_project}/train.code')
-                                ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/train.sbt'),
-                                nl_path=os.path.join(dataset_dir,f'original/{testing_project}/train.comment'),batch_size=config.support_batch_size,
-                                code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
-                                    ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
-                                    ,num_of_data=num_of_data)
+    if isinstance(model, dict):
+        train_instance = train.Train(vocab_file_path=vocab_file_path, model_state_dict=model,
+                                    code_path=os.path.join(dataset_dir,f'original/{testing_project}/train.code')
+                                    ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/train.sbt'),
+                                    nl_path=os.path.join(dataset_dir,f'original/{testing_project}/train.comment'),batch_size=config.support_batch_size,
+                                    code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
+                                        ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
+                                        ,num_of_data=num_of_data)
+    elif isinstance(model, str):
+        train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model,
+                                    code_path=os.path.join(dataset_dir,f'original/{testing_project}/train.code')
+                                    ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/train.sbt'),
+                                    nl_path=os.path.join(dataset_dir,f'original/{testing_project}/train.comment'),batch_size=config.support_batch_size,
+                                    code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
+                                        ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
+                                        ,num_of_data=num_of_data)        
     best_model_test_dict=train_instance.run_train()
     print('\nInitializing the test environments......')
     test_instance = eval.Test(best_model_test_dict,
@@ -103,10 +112,13 @@ if __name__ == '__main__':
     testing_project='flink'
         #training_projects, validating_project, testing_project = split_dataset(projects)
     config.logger.info(f'validate: {validating_project}, testing: {testing_project}')
-    best_model_dict = _train(training_projects=training_projects, \
-                            validating_project=validating_project,\
-                            vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path))
-    _test(best_model_dict,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=10)
+    # best_model_dict = _train(training_projects=training_projects, \
+    #                         validating_project=validating_project,\
+    #                         vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path))
+    path = "model/20240613_072802"
+    dir_list = os.listdir(path)
+    for file in dir_list:
+        _test(os.path.join(path,file),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=10)
     
     #  _test(os.path.join('20240511_132257', 'model_valid-loss-3.3848_epoch-14_batch--1.pt'))
 
