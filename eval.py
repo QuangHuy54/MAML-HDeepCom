@@ -23,12 +23,9 @@ class Eval(object):
             self.nl_vocab = utils.load_vocab_pk(config.nl_vocab_path)
         else:
             code_vocab_path,ast_vocab_path,nl_vocab_path=vocab_path
-            self.code_vocab = utils.Vocab('code_vocab')
-            self.ast_vocab = utils.Vocab('ast_vocab')
-            self.nl_vocab = utils.Vocab('nl_vocab') 
-            self.code_vocab.load_txt(code_vocab_path)
-            self.ast_vocab.load_txt(ast_vocab_path)
-            self.nl_vocab.load_txt(nl_vocab_path) 
+            self.code_vocab = utils.load_vocab_pk(code_vocab_path)
+            self.ast_vocab = utils.load_vocab_pk(ast_vocab_path)
+            self.nl_vocab = utils.load_vocab_pk(nl_vocab_path)
         self.code_vocab_size = len(self.code_vocab)
         self.ast_vocab_size = len(self.ast_vocab)
         self.nl_vocab_size = len(self.nl_vocab)
@@ -152,12 +149,9 @@ class Test(object):
             self.nl_vocab = utils.load_vocab_pk(config.nl_vocab_path)
         else:
             code_vocab_path,ast_vocab_path,nl_vocab_path=vocab_path
-            self.code_vocab = utils.Vocab('code_vocab')
-            self.ast_vocab = utils.Vocab('ast_vocab')
-            self.nl_vocab = utils.Vocab('nl_vocab') 
-            self.code_vocab.load_txt(code_vocab_path)
-            self.ast_vocab.load_txt(ast_vocab_path)
-            self.nl_vocab.load_txt(nl_vocab_path) 
+            self.code_vocab = utils.load_vocab_pk(code_vocab_path)
+            self.ast_vocab = utils.load_vocab_pk(ast_vocab_path)
+            self.nl_vocab = utils.load_vocab_pk(nl_vocab_path) 
         self.code_vocab_size = len(self.code_vocab)
         self.ast_vocab_size = len(self.ast_vocab)
         self.nl_vocab_size = len(self.nl_vocab)
