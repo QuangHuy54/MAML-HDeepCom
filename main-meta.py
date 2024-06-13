@@ -116,7 +116,7 @@ if __name__ == '__main__':
     #                         validating_project=validating_project,\
     #                         vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path)
     #                         ,model_file_path='../pretrain_model/pretrain.pt')
-    _test(os.path.join('20240613_072802','best_epoch-1.pt'),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=10)
+    _test(os.path.join('/model/20240613_072802','best_epoch-1.pt'),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=10)
     
     #  _test(os.path.join('20240511_132257', 'model_valid-loss-3.3848_epoch-14_batch--1.pt'))
 
