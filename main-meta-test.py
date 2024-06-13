@@ -63,7 +63,7 @@ def _test(model,vocab_file_path,testing_project,num_of_data=-1):
                                     nl_path=os.path.join(dataset_dir,f'original/{testing_project}/train.comment'),batch_size=config.support_batch_size,
                                     code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
                                         ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
-                                        ,num_of_data=num_of_data)
+                                        ,num_of_data=num_of_data,save_file=False)
     elif isinstance(model, str):
         train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model,
                                     code_path=os.path.join(dataset_dir,f'original/{testing_project}/train.code')
@@ -71,7 +71,7 @@ def _test(model,vocab_file_path,testing_project,num_of_data=-1):
                                     nl_path=os.path.join(dataset_dir,f'original/{testing_project}/train.comment'),batch_size=config.support_batch_size,
                                     code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
                                         ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
-                                        ,num_of_data=num_of_data)        
+                                        ,num_of_data=num_of_data,save_file=False)        
     best_model_test_dict=train_instance.run_train()
     print('\nInitializing the test environments......')
     test_instance = eval.Test(best_model_test_dict,
