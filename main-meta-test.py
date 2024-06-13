@@ -105,8 +105,7 @@ if __name__ == '__main__':
     config.logger.info(f'validate: {validating_project}, testing: {testing_project}')
     best_model_dict = _train(training_projects=training_projects, \
                             validating_project=validating_project,\
-                            vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path)
-                            ,model_file_path='./model/pretrain.pt')
+                            vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path))
     _test(best_model_dict,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=10)
     
     #  _test(os.path.join('20240511_132257', 'model_valid-loss-3.3848_epoch-14_batch--1.pt'))
