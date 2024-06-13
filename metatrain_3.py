@@ -126,7 +126,7 @@ class MetaTrain(object):
                             ast_vocab_size=self.ast_vocab_size,
                             nl_vocab_size=self.nl_vocab_size,
                             model_file_path=model_file_path)
-        self.maml=l2l.algorithms.MAML(self.model, lr=0.005)
+        self.maml=l2l.algorithms.MAML(self.model, lr=0.01)
         # self.params = list(self.model.module.code_encoder.parameters()) + \
         #     list(self.model.module.ast_encoder.parameters()) + \
         #     list(self.model.module.reduce_hidden.parameters()) + \
@@ -214,7 +214,7 @@ class MetaTrain(object):
 
             return loss
 
-    def train_iter(self,train_steps=12000, inner_train_steps=3, 
+    def train_iter(self,train_steps=12000, inner_train_steps=2, 
               valid_steps=200, inner_valid_steps=4, 
               valid_every=5, eval_start=0, early_stop=50, epoch_number=12000):
 
@@ -274,8 +274,8 @@ class MetaTrain(object):
                         epoch + 1, epoch_number,iteration+1 , num_iteration, np.mean(losses)))
                 idx+=1
 
-            # if config.use_lr_decay:
-            #     self.lr_scheduler.step()
+            if config.use_lr_decay:
+                self.lr_scheduler.step()
                 
             # validation
             if epoch >= eval_start:
