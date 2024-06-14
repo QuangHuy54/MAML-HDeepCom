@@ -70,8 +70,14 @@ def _train(vocab_file_path=None, model_file_path=None):
 
 def _test(model):
     print('\nInitializing the test environments......')
-    test_instance = eval.Test(model,code_path="../data_RQ3/test/test.token.code",ast_path="../data_RQ3/test/test.token.ast"
-                              ,nl_path="../data_RQ3/test/test.token.nl",vocab_path=None)
+    # test_instance = eval.Test(model,code_path="../data_RQ3/test/test.token.code",ast_path="../data_RQ3/test/test.token.ast"
+    #                           ,nl_path="../data_RQ3/test/test.token.nl",vocab_path=None)
+    testing_project='flink'
+    dataset_dir='../dataset_v2/'
+    test_instance = eval.Test(model,
+                              code_path=os.path.join(dataset_dir,f'original/{testing_project}/valid.code')
+                                ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/valid.sbt'),
+                                nl_path=os.path.join(dataset_dir,f'original/{testing_project}/valid.comment'))    
     print('Environments built successfully.\n')
     print('Size of test dataset:', test_instance.dataset_size)
     config.logger.info('Size of test dataset: {}'.format(test_instance.dataset_size))
