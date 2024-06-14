@@ -5,7 +5,7 @@ import logging
 
 
 # paths
-dataset_dir = '../dataset/processed/'
+dataset_dir = '../dataset_v2'
 
 if not os.path.exists(dataset_dir):
     raise Exception('Dataset directory not exist.')
