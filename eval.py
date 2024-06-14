@@ -175,7 +175,7 @@ class Test(object):
             self.model = models.Model(code_vocab_size=self.code_vocab_size,
                                       ast_vocab_size=self.ast_vocab_size,
                                       nl_vocab_size=self.nl_vocab_size,
-                                      model_file_path=os.path.join(config.model_dir, model),
+                                      model_file_path=model,
                                       is_eval=True)
         elif isinstance(model, dict):
             self.model = models.Model(code_vocab_size=self.code_vocab_size,
