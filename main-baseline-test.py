@@ -35,7 +35,7 @@ def _train(testing_project,is_transfer,vocab_file_path=None, model_file_path=Non
                                     ,code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
                                     ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
                                     ,model_state_dict=model_state_dict
-                                    ,num_of_data=num_of_data,model_file_path=model_file_path)        
+                                    ,num_of_data=num_of_data,model_file_path=model_file_path,save_file=False)        
     print('Environments built successfully.\n')
     print('Size of train dataset:', train_instance.train_dataset_size)
 
@@ -75,7 +75,7 @@ def _test(model,testing_project):
 
 if __name__ == '__main__':
     testing_project='flink'
-    path = "model/20240613_072802"
+    path = "model/20240614_115800"
     dir_list = os.listdir(path)
     for file in dir_list:
         print(f'File name: ',file)
