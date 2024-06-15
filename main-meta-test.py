@@ -1,4 +1,5 @@
 import os
+import argparse
 
 import config
 import metatrain_3 as metatrain
@@ -107,9 +108,15 @@ if __name__ == '__main__':
     # training_projects=['ExoPlayer','flink','guava','kafka','spring-boot','spring-framework','spring-security','open-liberty','j2objc','hadoop-20','nitro','voltdb','thredds','aws-sdk-java','BoofCV']
     # validating_project='dubbo'
     # testing_project='dagger'
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('-t', '--testing', type=str,default='flink')
+    parser.add_argument('-n','--numdata',
+                        type=int, default=100)
+    args = parser.parse_args()
     training_projects=['dubbo','guava','kafka']
     validating_project='dagger'
-    testing_project='flink'
+    testing_project=args.testing
+    
         #training_projects, validating_project, testing_project = split_dataset(projects)
     config.logger.info(f'validate: {validating_project}, testing: {testing_project}')
     # best_model_dict = _train(training_projects=training_projects, \
@@ -120,7 +127,7 @@ if __name__ == '__main__':
     for file in dir_list:
         print(f'File name: ',file)
         config.logger.info(f'File name: {file}')
-        _test(os.path.join(path,file),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=100)
+        _test(os.path.join(path,file),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=args.numdata)
     
     #  _test(os.path.join('20240511_132257', 'model_valid-loss-3.3848_epoch-14_batch--1.pt'))
 
