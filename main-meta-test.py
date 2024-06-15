@@ -109,6 +109,7 @@ if __name__ == '__main__':
     # validating_project='dubbo'
     # testing_project='dagger'
     parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('-p', '--path', type=str,required=True)
     parser.add_argument('-t', '--testing', type=str,default='flink')
     parser.add_argument('-n','--numdata',
                         type=int, default=100)
@@ -122,7 +123,7 @@ if __name__ == '__main__':
     # best_model_dict = _train(training_projects=training_projects, \
     #                         validating_project=validating_project,\
     #                         vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path))
-    path = "model/20240613_072802"
+    path = args.path
     dir_list = os.listdir(path)
     for file in dir_list:
         print(f'File name: ',file)
