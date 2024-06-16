@@ -113,6 +113,8 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--testing', type=str,default='flink')
     parser.add_argument('-n','--numdata',
                         type=int, default=100)
+    parser.add_argument('-s','--specific',
+                        type=str, default=None)
     args = parser.parse_args()
     training_projects=['dubbo','guava','kafka']
     validating_project='dagger'
@@ -125,10 +127,14 @@ if __name__ == '__main__':
     #                         vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path))
     path = args.path
     dir_list = os.listdir(path)
-    for file in dir_list:
-        print(f'File name: ',file)
-        config.logger.info(f'File name: {file}')
-        _test(os.path.join(path,file),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=args.numdata)
+    if args.specific==None:
+        for file in dir_list:
+            print(f'File name: ',file)
+            config.logger.info(f'File name: {file}')
+            _test(os.path.join(path,file),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=args.numdata)
     
     #  _test(os.path.join('20240511_132257', 'model_valid-loss-3.3848_epoch-14_batch--1.pt'))
+    else:
+        config.logger.info(f'File name: {args.specific}')
+        _test(os.path.join(path,args.specific),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=args.numdata)        
 
