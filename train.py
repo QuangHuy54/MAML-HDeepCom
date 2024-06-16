@@ -131,7 +131,7 @@ class Train(object):
             self.early_stopping = utils.EarlyStopping()
 
         config.model_dir = os.path.join(config.model_dir, utils.get_timestamp())
-        if not os.path.exists(config.model_dir):
+        if not os.path.exists(config.model_dir) and self.salf_file:
             os.makedirs(config.model_dir)
 
     def run_train(self):
