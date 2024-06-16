@@ -79,14 +79,22 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--testing', type=str,default='flink')
     parser.add_argument('-n','--numdata',
                         type=int, default=100)
+    parser.add_argument('-s','--specific',
+                        type=str, default=None)
     args = parser.parse_args()
     testing_project=args.testing
     path = args.path
     dir_list = os.listdir(path)
-    for file in dir_list:
-        print(f'File name: ',file)
-        config.logger.info(f'File name: {file}')
-        best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path=os.path.join(path,file),num_of_data=args.numdata)
+    if args.specific==None:
+        for file in dir_list:
+            print(f'File name: ',file)
+            config.logger.info(f'File name: {file}')
+            best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path=os.path.join(path,file),num_of_data=args.numdata)
 
-        _test(best_model_dict2,testing_project)
+            _test(best_model_dict2,testing_project)
+    else:
+        config.logger.info(f'File name: {args.specific}')
+        best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path=os.path.join(path,args.specific),num_of_data=args.numdata)
+
+        _test(best_model_dict2,testing_project)        
     # _test(os.path.join('20240514_083750', 'best_epoch-1_batch-last.pt'))
