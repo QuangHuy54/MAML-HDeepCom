@@ -523,14 +523,14 @@ def sentence_bleu_score(reference, candidate) -> float:
     smoothing_function = nltk.translate.bleu_score.SmoothingFunction()
     return nltk.translate.bleu_score.sentence_bleu(references=[reference],
                                                    hypothesis=candidate,
-                                                   smoothing_function=smoothing_function.method3)
+                                                   smoothing_function=smoothing_function.method5)
 
 
 def corpus_bleu_score(references, candidates) -> float:
     smoothing_function = nltk.translate.bleu_score.SmoothingFunction()
     return nltk.translate.bleu_score.corpus_bleu(list_of_references=[[reference] for reference in references],
                                                  hypotheses=[candidate for candidate in candidates],
-                                                 smoothing_function=smoothing_function.method3)
+                                                 smoothing_function=smoothing_function.method5)
 
 
 def meteor_score(reference, candidate):
@@ -541,7 +541,7 @@ def meteor_score(reference, candidate):
     :return:
     """
     return nltk.translate.meteor_score.single_meteor_score(reference,
-                                                           candidate, alpha=0.85, beta=0.2, gamma=0.6)
+                                                           candidate)
 
 
 def rouge(reference, candidate):
