@@ -41,9 +41,9 @@ class MetaTrain(object):
         self.meta_datasets = {}
         for project in (training_projects + [validating_project]):
             self.meta_datasets[project]={
-                "support": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/all_truncated.code'),
+                "support": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/all_truncated_final.code'),
                                                 ast_path=os.path.join(dataset_dir,f'{project}/all_truncated.sbt'),
-                                                nl_path=os.path.join(dataset_dir,f'{project}/all_truncated.comment')),
+                                                nl_path=os.path.join(dataset_dir,f'{project}/all_truncated_final.comment')),
                 "query": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/valid.code'),
                                                 ast_path=os.path.join(dataset_dir,f'{project}/valid.sbt'),
                                                 nl_path=os.path.join(dataset_dir,f'{project}/valid.comment'))
@@ -126,7 +126,7 @@ class MetaTrain(object):
                             ast_vocab_size=self.ast_vocab_size,
                             nl_vocab_size=self.nl_vocab_size,
                             model_file_path=model_file_path)
-        self.maml=l2l.algorithms.MAML(self.model, lr=0.075)
+        self.maml=l2l.algorithms.MAML(self.model, lr=0.05)
         # self.params = list(self.model.module.code_encoder.parameters()) + \
         #     list(self.model.module.ast_encoder.parameters()) + \
         #     list(self.model.module.reduce_hidden.parameters()) + \
