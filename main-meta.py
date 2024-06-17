@@ -117,8 +117,18 @@ if __name__ == '__main__':
         'dubbo': ['kafka', 'flink', 'guava'], 
         'flink': ['kafka', 'dubbo', 'guava'], 
     }
+    project2validate={        
+        'spring-boot': 'dagger', 
+        'spring-framework': 'dagger', 
+        'spring-security': 'dagger', 
+        'guava': 'dubbo', 
+        'ExoPlayer': 'dubbo', 
+        'dagger': 'dubbo', 
+        'kafka': 'dagger', 
+        'dubbo': 'dagger', 
+        'flink': 'dagger', }
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('-v', '--validate', type=str,default='dagger')
+    parser.add_argument('-v', '--validate', type=str,default=None)
 
     parser.add_argument('-t','--test',
                         type=str, default='flink')
@@ -128,11 +138,12 @@ if __name__ == '__main__':
         training_projects=project2sources[args.test]
     else:
         training_projects=args.train
+
     # validating_project='dubbo'
     # testing_project='dagger'
     #training_projects=['dubbo','guava','kafka']
-    validating_project=args.validate
     testing_project=args.test
+    validating_project=args.validate if args.validate != None else project2validate[testing_project]  
         #training_projects, validating_project, testing_project = split_dataset(projects)
     config.logger.info(f'validate: {validating_project}, testing: {testing_project}')
     best_model_dict = _train(training_projects=training_projects, \
