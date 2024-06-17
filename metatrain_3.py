@@ -160,7 +160,7 @@ class MetaTrain(object):
         # early stopping
         self.early_stopping = None
         if config.use_early_stopping:
-            self.early_stopping = utils.EarlyStopping()
+            self.early_stopping = utils.EarlyStopping(patience=config.early_stopping_patience_meta)
 
         config.model_dir = os.path.join(config.model_dir, utils.get_timestamp())
         if not os.path.exists(config.model_dir):
