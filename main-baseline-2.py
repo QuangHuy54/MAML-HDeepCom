@@ -3,7 +3,7 @@ import os
 import config
 import train
 import eval
-
+import argparse
 
 def _train(testing_project,is_transfer,vocab_file_path=None, model_file_path=None,model_state_dict=None,num_of_data=-1):
     print('\nStarting the training process......\n')
@@ -74,7 +74,11 @@ def _test(model,testing_projet):
 
 
 if __name__ == '__main__':
-    testing_project='flink'
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('-t','--test',
+                        type=str, default='flink')
+    args = parser.parse_args()
+    testing_project=args.test
     best_model_dict = _train(testing_project,is_transfer=False,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path='../pretrain_model/pretrain.pt')
 
     # best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_state_dict=best_model_dict,num_of_data=100)

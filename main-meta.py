@@ -1,5 +1,5 @@
 import os
-
+import argparse
 import config
 import metatrain_3 as metatrain
 import eval
@@ -98,18 +98,41 @@ def split_dataset(projects):
 
     return (training_projects, validating_project, testing_project)
 
+def list_of_strings(arg):
+    return arg.split(',')
 
 if __name__ == '__main__':
     # projects = ['AppScale/appscale','edx/edx-platform','sympy/sympy','IronLanguages/main','mne-tools/mne-python','JiYou/openstack','openhatch/oh-mainline','cloudera/hue','ahmetcemturan/SFACT','mne-tools/mne-python'] # tạm fix cứng
     # training_projects=['AppScale/appscale','edx/edx-platform','sympy/sympy' ,'JiYou/openstack','IronLanguages/main','openhatch/oh-mainline','mne-tools/mne-python','cloudera/hue']
     # validating_project="ahmetcemturan/SFACT"
     # testing_project="kbengine/kbengine"
-    training_projects=['dubbo','ExoPlayer','guava','kafka','spring-boot','spring-framework','spring-security']
+    project2sources = {
+        'spring-boot': ['spring-framework', 'spring-security', 'guava'], 
+        'spring-framework': ['spring-boot', 'spring-security', 'guava'], 
+        'spring-security': ['spring-boot', 'spring-framework', 'guava'], 
+        'guava': ['spring-framework', 'ExoPlayer', 'dagger'], 
+        'ExoPlayer': ['guava', 'dagger', 'kafka'], 
+        'dagger': ['guava', 'ExoPlayer', 'kafka'], 
+        'kafka': ['dubbo', 'flink', 'guava'], 
+        'dubbo': ['kafka', 'flink', 'guava'], 
+        'flink': ['kafka', 'dubbo', 'guava'], 
+    }
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('-v', '--validate', type=str,default='dagger')
+
+    parser.add_argument('-t','--test',
+                        type=str, default='flink')
+    parser.add_argument('-tr','--train',type=list_of_strings,default=None)
+    args = parser.parse_args()
+    if args.train==None:
+        training_projects=['dubbo','ExoPlayer','guava','kafka','spring-boot','spring-framework','spring-security']
+    else:
+        training_projects=project2sources[args.test]
     # validating_project='dubbo'
     # testing_project='dagger'
     #training_projects=['dubbo','guava','kafka']
-    validating_project='dagger'
-    testing_project='flink'
+    validating_project=args.validate
+    testing_project=args.test
         #training_projects, validating_project, testing_project = split_dataset(projects)
     config.logger.info(f'validate: {validating_project}, testing: {testing_project}')
     best_model_dict = _train(training_projects=training_projects, \
