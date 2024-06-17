@@ -125,9 +125,9 @@ if __name__ == '__main__':
     parser.add_argument('-tr','--train',type=list_of_strings,default=None)
     args = parser.parse_args()
     if args.train==None:
-        training_projects=['dubbo','ExoPlayer','guava','kafka','spring-boot','spring-framework','spring-security']
-    else:
         training_projects=project2sources[args.test]
+    else:
+        training_projects=args.train
     # validating_project='dubbo'
     # testing_project='dagger'
     #training_projects=['dubbo','guava','kafka']
