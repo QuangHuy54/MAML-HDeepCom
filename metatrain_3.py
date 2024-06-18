@@ -26,7 +26,7 @@ def tuple_map(fn, t, **kwargs):
 
 class MetaTrain(object):
 
-    def __init__(self, training_projects, validating_project, vocab_file_path=None, model_file_path=None):
+    def __init__(self, training_projects, validating_project, vocab_file_path=None, model_file_path=None,lr=0.05):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -126,7 +126,7 @@ class MetaTrain(object):
                             ast_vocab_size=self.ast_vocab_size,
                             nl_vocab_size=self.nl_vocab_size,
                             model_file_path=model_file_path)
-        self.maml=l2l.algorithms.MAML(self.model, lr=0.05)
+        self.maml=l2l.algorithms.MAML(self.model, lr=lr)
         # self.params = list(self.model.module.code_encoder.parameters()) + \
         #     list(self.model.module.ast_encoder.parameters()) + \
         #     list(self.model.module.reduce_hidden.parameters()) + \
