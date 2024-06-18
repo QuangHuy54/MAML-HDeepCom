@@ -22,7 +22,8 @@ class Train(object):
                                                  code_valid_path=config.valid_code_path,
                                                  ast_valid_path=config.valid_sbt_path,
                                                  nl_valid_path=config.valid_nl_path,batch_size=config.batch_size
-                                                 ,num_of_data=-1,save_file=True,exact_vocab=False):
+                                                 ,num_of_data=-1,save_file=True,exact_vocab=False
+                                                 ,meta_baseline=False,code_test_path=None,ast_test_path=None,nl_test_path=None,num_of_data_meta=100):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -34,6 +35,11 @@ class Train(object):
         self.train_dataset = data.CodePtrDataset(code_path,
                                                  ast_path,
                                                  nl_path,num_of_data)
+        if meta_baseline==True:
+            self.train_dataset_test= data.CodePtrDataset(code_test_path,
+                                                 ast_test_path,
+                                                 nl_test_path,num_of_data_meta)           
+            self.train_dataset=torch.utils.data.ConcatDataset([self.train_dataset, self.train_dataset_test])
         self.train_dataset_size = len(self.train_dataset)
         self.train_dataloader = DataLoader(dataset=self.train_dataset,
                                            batch_size=batch_size,
