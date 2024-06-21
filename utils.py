@@ -7,9 +7,8 @@ import pickle
 import numpy as np
 import nltk
 from rouge import Rouge
-
+import random
 import config
-
 
 # special vocabulary symbols
 
@@ -165,7 +164,7 @@ def get_timestamp():
     return time.strftime('%Y%m%d_%H%M%S', time.localtime())
 
 
-def load_dataset(dataset_path,num_of_data=-1) -> list:
+def load_dataset(dataset_path,num_of_data=-1,seed=1) -> list:
     """
     load the dataset from given path
     :param dataset_path: path of dataset
@@ -179,10 +178,11 @@ def load_dataset(dataset_path,num_of_data=-1) -> list:
     if num_of_data==-1:
         return lines
     else:
-        # sidx = np.random.permutation(len(lines))
-        # ele_pos=sidx[:num_of_data]
-        # return [lines[i] for i in ele_pos]
-        return lines[:num_of_data]
+        np.random.seed(seed)
+        sidx = np.random.permutation(len(lines))
+        ele_pos=sidx[:num_of_data]
+        return [lines[i] for i in ele_pos]
+        #return lines[:num_of_data]
 
 def filter_data(codes, asts, nls):
     """
@@ -586,9 +586,13 @@ def print_test_progress(start_time, cur_time, index_batch, batch_size, dataset_s
         avg_s_bleu, avg_meteor,avg_rouge))
 
 
-def print_test_scores(scores_dict):
-    print('\nTest completed.', end=' ')
-    config.logger.info('Test completed.')
+def print_test_scores(scores_dict,is_average=False):
+    if is_average:
+        print('\nTest completed with average result.', end=' ')
+        config.logger.info('Test completed with average result.')   
+    else:     
+        print('\nTest completed.', end=' ')
+        config.logger.info('Test completed.')
     for name, score in scores_dict.items():
         print('{}: {}.'.format(name, score), end=' ')
         config.logger.info('{}: {}.'.format(name, score))

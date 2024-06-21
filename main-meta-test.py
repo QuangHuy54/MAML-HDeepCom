@@ -6,7 +6,9 @@ import metatrain_3 as metatrain
 import eval
 import random
 import train
-
+import numpy as np
+import torch
+import utils
 def _train(training_projects,validating_project,vocab_file_path=None, model_file_path=None):
     print('\nStarting the training process......\n')
 
@@ -55,7 +57,7 @@ def _train(training_projects,validating_project,vocab_file_path=None, model_file
     return best_model
 
 
-def _test(model,vocab_file_path,testing_project,num_of_data=-1):
+def _test(model,vocab_file_path,testing_project,num_of_data=-1,seed=1):
     dataset_dir = "../dataset_v2/"
     if isinstance(model, dict):
         train_instance = train.Train(vocab_file_path=vocab_file_path, model_state_dict=model,
@@ -64,7 +66,7 @@ def _test(model,vocab_file_path,testing_project,num_of_data=-1):
                                     nl_path=os.path.join(dataset_dir,f'original/{testing_project}/train.comment'),batch_size=config.support_batch_size,
                                     code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
                                         ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
-                                        ,num_of_data=num_of_data,save_file=False)
+                                        ,num_of_data=num_of_data,save_file=False,seed=seed)
     elif isinstance(model, str):
         train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model,
                                     code_path=os.path.join(dataset_dir,f'original/{testing_project}/train.code')
@@ -72,7 +74,7 @@ def _test(model,vocab_file_path,testing_project,num_of_data=-1):
                                     nl_path=os.path.join(dataset_dir,f'original/{testing_project}/train.comment'),batch_size=config.support_batch_size,
                                     code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
                                         ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
-                                        ,num_of_data=num_of_data,save_file=False)        
+                                        ,num_of_data=num_of_data,save_file=False,seed=seed)        
     best_model_test_dict=train_instance.run_train()
     print('\nInitializing the test environments......')
     test_instance = eval.Test(best_model_test_dict,
@@ -84,8 +86,9 @@ def _test(model,vocab_file_path,testing_project,num_of_data=-1):
 
     config.logger.info('Start Testing.')
     print('\nStart Testing......')
-    test_instance.run_test()
+    result=test_instance.run_test()
     print('Testing is done.')
+    return result
 
 
 def split_dataset(projects):
@@ -115,11 +118,13 @@ if __name__ == '__main__':
                         type=int, default=100)
     parser.add_argument('-s','--specific',
                         type=str, default=None)
+    parser.add_argument('-num','--numtest',
+                        type=int, default=1)    
     args = parser.parse_args()
     training_projects=['dubbo','guava','kafka']
     validating_project='dagger'
     testing_project=args.testing
-    
+    num_test=args.numtest
         #training_projects, validating_project, testing_project = split_dataset(projects)
     config.logger.info(f'validate: {validating_project}, testing: {testing_project}')
     # best_model_dict = _train(training_projects=training_projects, \
@@ -129,12 +134,32 @@ if __name__ == '__main__':
     dir_list = os.listdir(path)
     if args.specific==None:
         for file in dir_list:
+            res_dict=None
             print(f'File name: ',file)
             config.logger.info(f'File name: {file}')
-            _test(os.path.join(path,file),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=args.numdata)
-    
-    #  _test(os.path.join('20240511_132257', 'model_valid-loss-3.3848_epoch-14_batch--1.pt'))
+            for i in range(num_test):
+                result=_test(os.path.join(path,file),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=args.numdata,seed=i)
+                if res_dict==None:
+                    res_dict=result
+                else:
+                    for key in res_dict.keys():
+                        res_dict[key]=res_dict[key]+result[key]
+            for key in res_dict.keys():
+                res_dict[key]=res_dict[key]/num_test
+            utils.print_test_scores(res_dict,is_average=True)
+        #  _test(os.path.join('20240511_132257', 'model_valid-loss-3.3848_epoch-14_batch--1.pt'))
     else:
+        res_dict=None
+        print(f'File name: ',args.specific)
         config.logger.info(f'File name: {args.specific}')
-        _test(os.path.join(path,args.specific),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=args.numdata)        
+        for i in range(num_test):
+            result=_test(os.path.join(path,args.specific),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=args.numdata,seed=i)
+            if res_dict==None:
+                    res_dict=result
+            else:
+                for key in res_dict.keys():
+                    res_dict[key]=res_dict[key]+result[key]
+        for key in res_dict.keys():
+            res_dict[key]=res_dict[key]/num_test
+        utils.print_test_scores(res_dict,is_average=True)        
 

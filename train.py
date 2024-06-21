@@ -23,7 +23,7 @@ class Train(object):
                                                  ast_valid_path=config.valid_sbt_path,
                                                  nl_valid_path=config.valid_nl_path,batch_size=config.batch_size
                                                  ,num_of_data=-1,save_file=True,exact_vocab=False
-                                                 ,meta_baseline=False,code_test_path=None,ast_test_path=None,nl_test_path=None,num_of_data_meta=100):
+                                                 ,meta_baseline=False,code_test_path=None,ast_test_path=None,nl_test_path=None,num_of_data_meta=100,seed=1):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -34,7 +34,7 @@ class Train(object):
         self.salf_file=save_file
         self.train_dataset = data.CodePtrDataset(code_path,
                                                  ast_path,
-                                                 nl_path,num_of_data)
+                                                 nl_path,num_of_data,seed)
         if meta_baseline==True:
             self.train_dataset_test= data.CodePtrDataset(code_test_path,
                                                  ast_test_path,
