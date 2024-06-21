@@ -73,13 +73,14 @@ def _test(model,testing_project):
     print('Testing is done.')
     return result
 
-
+def list_of_ints(arg):
+    return list(map(int, arg.split(',')))
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('-p', '--path', type=str,required=True)
     parser.add_argument('-t', '--testing', type=str,default='flink')
     parser.add_argument('-n','--numdata',
-                        type=int, default=100)
+                        type=list_of_ints, default=[100])
     parser.add_argument('-s','--specific',
                         type=str, default=None)
     parser.add_argument('-num','--numtest',
@@ -89,14 +90,33 @@ if __name__ == '__main__':
     testing_project=args.testing
     path = args.path
     dir_list = os.listdir(path)
-    if args.specific==None:
-        for file in dir_list:
+    for num_data in args.numdata:
+        print("Num data: ",num_data)
+        config.logger.info(f'Num data: {num_data}')
+        if args.specific==None:
+            for file in dir_list:
+                res_dict=None
+                print(f'File name: ',file)
+                config.logger.info(f'File name: {file}')
+                for i in range(num_test):
+                    best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path=os.path.join(path,file),num_of_data=num_data,seed=i)
+                    result=_test(best_model_dict2,testing_project)
+                    if res_dict==None:
+                        res_dict=result
+                    else:
+                        for key in res_dict.keys():
+                            res_dict[key]=res_dict[key]+result[key]
+                for key in res_dict.keys():
+                    res_dict[key]=res_dict[key]/num_test
+                utils.print_test_scores(res_dict,is_average=True)
+        else:
+            config.logger.info(f'File name: {args.specific}')
+            print(f'File name: ',args.specific)
             res_dict=None
-            print(f'File name: ',file)
-            config.logger.info(f'File name: {file}')
             for i in range(num_test):
-                best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path=os.path.join(path,file),num_of_data=args.numdata,seed=i)
-                result=_test(best_model_dict2,testing_project)
+                best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path=os.path.join(path,args.specific),num_of_data=num_data,seed=i)
+
+                result=_test(best_model_dict2,testing_project)      
                 if res_dict==None:
                     res_dict=result
                 else:
@@ -104,21 +124,5 @@ if __name__ == '__main__':
                         res_dict[key]=res_dict[key]+result[key]
             for key in res_dict.keys():
                 res_dict[key]=res_dict[key]/num_test
-            utils.print_test_scores(res_dict,is_average=True)
-    else:
-        config.logger.info(f'File name: {args.specific}')
-        print(f'File name: ',args.specific)
-        res_dict=None
-        for i in range(num_test):
-            best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path=os.path.join(path,args.specific),num_of_data=args.numdata,seed=i)
-
-            result=_test(best_model_dict2,testing_project)      
-            if res_dict==None:
-                res_dict=result
-            else:
-                for key in res_dict.keys():
-                    res_dict[key]=res_dict[key]+result[key]
-        for key in res_dict.keys():
-            res_dict[key]=res_dict[key]/num_test
-        utils.print_test_scores(res_dict,is_average=True) 
+            utils.print_test_scores(res_dict,is_average=True) 
     # _test(os.path.join('20240514_083750', 'best_epoch-1_batch-last.pt'))

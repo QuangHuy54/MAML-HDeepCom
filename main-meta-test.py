@@ -102,7 +102,8 @@ def split_dataset(projects):
 
     return (training_projects, validating_project, testing_project)
 
-
+def list_of_ints(arg):
+    return list(map(int, arg.split(',')))
 if __name__ == '__main__':
     # projects = ['AppScale/appscale','edx/edx-platform','sympy/sympy','IronLanguages/main','mne-tools/mne-python','JiYou/openstack','openhatch/oh-mainline','cloudera/hue','ahmetcemturan/SFACT','mne-tools/mne-python'] # tạm fix cứng
     # training_projects=['AppScale/appscale','edx/edx-platform','sympy/sympy' ,'JiYou/openstack','IronLanguages/main','openhatch/oh-mainline','mne-tools/mne-python','cloudera/hue']
@@ -115,7 +116,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--path', type=str,required=True)
     parser.add_argument('-t', '--testing', type=str,default='flink')
     parser.add_argument('-n','--numdata',
-                        type=int, default=100)
+                        type=list_of_ints, default=[100])
     parser.add_argument('-s','--specific',
                         type=str, default=None)
     parser.add_argument('-num','--numtest',
@@ -132,34 +133,35 @@ if __name__ == '__main__':
     #                         vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path))
     path = args.path
     dir_list = os.listdir(path)
-    if args.specific==None:
-        for file in dir_list:
+    for num_data in args.numdata:
+        if args.specific==None:
+            for file in dir_list:
+                res_dict=None
+                print(f'File name: ',file)
+                config.logger.info(f'File name: {file}')
+                for i in range(num_test):
+                    result=_test(os.path.join(path,file),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=num_data,seed=i)
+                    if res_dict==None:
+                        res_dict=result
+                    else:
+                        for key in res_dict.keys():
+                            res_dict[key]=res_dict[key]+result[key]
+                for key in res_dict.keys():
+                    res_dict[key]=res_dict[key]/num_test
+                utils.print_test_scores(res_dict,is_average=True)
+            #  _test(os.path.join('20240511_132257', 'model_valid-loss-3.3848_epoch-14_batch--1.pt'))
+        else:
             res_dict=None
-            print(f'File name: ',file)
-            config.logger.info(f'File name: {file}')
+            print(f'File name: ',args.specific)
+            config.logger.info(f'File name: {args.specific}')
             for i in range(num_test):
-                result=_test(os.path.join(path,file),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=args.numdata,seed=i)
+                result=_test(os.path.join(path,args.specific),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=num_data,seed=i)
                 if res_dict==None:
-                    res_dict=result
+                        res_dict=result
                 else:
                     for key in res_dict.keys():
                         res_dict[key]=res_dict[key]+result[key]
             for key in res_dict.keys():
                 res_dict[key]=res_dict[key]/num_test
-            utils.print_test_scores(res_dict,is_average=True)
-        #  _test(os.path.join('20240511_132257', 'model_valid-loss-3.3848_epoch-14_batch--1.pt'))
-    else:
-        res_dict=None
-        print(f'File name: ',args.specific)
-        config.logger.info(f'File name: {args.specific}')
-        for i in range(num_test):
-            result=_test(os.path.join(path,args.specific),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=args.numdata,seed=i)
-            if res_dict==None:
-                    res_dict=result
-            else:
-                for key in res_dict.keys():
-                    res_dict[key]=res_dict[key]+result[key]
-        for key in res_dict.keys():
-            res_dict[key]=res_dict[key]/num_test
-        utils.print_test_scores(res_dict,is_average=True)        
+            utils.print_test_scores(res_dict,is_average=True)        
 
