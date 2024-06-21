@@ -134,6 +134,8 @@ if __name__ == '__main__':
     path = args.path
     dir_list = os.listdir(path)
     for num_data in args.numdata:
+        print("Num data: ",num_data)
+        config.logger.info(f'Num data: {num_data}')
         if args.specific==None:
             for file in dir_list:
                 res_dict=None
