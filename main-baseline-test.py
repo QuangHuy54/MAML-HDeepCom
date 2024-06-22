@@ -110,6 +110,7 @@ if __name__ == '__main__':
                 for key in res_dict.keys():
                     res_dict[key]=res_dict[key]/num_test
                 total_res[num_data]=res_dict
+                utils.print_test_scores(total_res[num_data],is_average=True)
         else:
             config.logger.info(f'File name: {args.specific}')
             print(f'File name: ',args.specific)
@@ -126,6 +127,7 @@ if __name__ == '__main__':
             for key in res_dict.keys():
                 res_dict[key]=res_dict[key]/num_test
             total_res[num_data]=res_dict 
+            utils.print_test_scores(total_res[num_data],is_average=True)
     # _test(os.path.join('20240514_083750', 'best_epoch-1_batch-last.pt'))
 
     for num_data in args.numdata:

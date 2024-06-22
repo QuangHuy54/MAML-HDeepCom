@@ -152,6 +152,7 @@ if __name__ == '__main__':
                 for key in res_dict.keys():
                     res_dict[key]=res_dict[key]/num_test
                 total_res[num_data]=res_dict
+                utils.print_test_scores(total_res[num_data],is_average=True)
             #  _test(os.path.join('20240511_132257', 'model_valid-loss-3.3848_epoch-14_batch--1.pt'))
         else:
             res_dict=None
@@ -167,6 +168,7 @@ if __name__ == '__main__':
             for key in res_dict.keys():
                 res_dict[key]=res_dict[key]/num_test
             total_res[num_data]=res_dict
+            utils.print_test_scores(total_res[num_data],is_average=True)
     
     for num_data in args.numdata:
         print(f'Num data: {num_data}')
