@@ -587,10 +587,7 @@ def print_test_progress(start_time, cur_time, index_batch, batch_size, dataset_s
 
 
 def print_test_scores(scores_dict,is_average=False):
-    if is_average:
-        print('\nTest completed with average result.', end=' ')
-        config.logger.info('Test completed with average result.')   
-    else:     
+    if is_average==False:     
         print('\nTest completed.', end=' ')
         config.logger.info('Test completed.')
     for name, score in scores_dict.items():

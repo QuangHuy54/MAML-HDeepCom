@@ -133,6 +133,7 @@ if __name__ == '__main__':
     #                         vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path))
     path = args.path
     dir_list = os.listdir(path)
+    total_res={}
     for num_data in args.numdata:
         print("Num data: ",num_data)
         config.logger.info(f'Num data: {num_data}')
@@ -150,7 +151,7 @@ if __name__ == '__main__':
                             res_dict[key]=res_dict[key]+result[key]
                 for key in res_dict.keys():
                     res_dict[key]=res_dict[key]/num_test
-                utils.print_test_scores(res_dict,is_average=True)
+                total_res[num_data]=res_dict
             #  _test(os.path.join('20240511_132257', 'model_valid-loss-3.3848_epoch-14_batch--1.pt'))
         else:
             res_dict=None
@@ -165,5 +166,11 @@ if __name__ == '__main__':
                         res_dict[key]=res_dict[key]+result[key]
             for key in res_dict.keys():
                 res_dict[key]=res_dict[key]/num_test
-            utils.print_test_scores(res_dict,is_average=True)        
+            total_res[num_data]=res_dict
+    
+    for num_data in args.numdata:
+        print(f'Num data: {num_data}')
+        config.logger.info(f'Num data: {num_data}')
+        utils.print_test_scores(total_res[num_data],is_average=True)
+                
 
