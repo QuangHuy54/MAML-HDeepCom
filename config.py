@@ -90,7 +90,7 @@ max_nl_length = 30
 min_nl_length = 4
 max_decode_steps = 30
 early_stopping_patience = 5
-early_stopping_patience_meta = 10
+early_stopping_patience_meta = 2000
 
 
 # hyperparameters

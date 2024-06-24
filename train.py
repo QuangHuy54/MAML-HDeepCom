@@ -30,7 +30,7 @@ class Train(object):
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
         :param model_file_path:
         """
-
+        torch.manual_seed(seed)
         # dataset
         self.salf_file=save_file
         self.train_dataset = data.CodePtrDataset(code_path,
