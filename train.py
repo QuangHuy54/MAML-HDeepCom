@@ -44,7 +44,7 @@ class Train(object):
         self.train_dataset_size = len(self.train_dataset)
         self.train_dataloader = DataLoader(dataset=self.train_dataset,
                                            batch_size=batch_size,
-                                           shuffle=True,
+                                           shuffle=False,
                                            collate_fn=lambda *args: utils.unsort_collate_fn(args,
                                                                                             code_vocab=self.code_vocab,
                                                                                             ast_vocab=self.ast_vocab,
