@@ -123,7 +123,7 @@ class Train(object):
             self.optimizer=Adam(self.model.parameters(),lr=config.learning_rate)
         else:
             self.optimizer=SGD(self.model.parameters(),lr=0.000001)
-        if config.use_lr_decay:
+        if config.use_lr_decay and self.adam:
             self.lr_scheduler = lr_scheduler.StepLR(self.optimizer,
                                                     step_size=config.lr_decay_every,
                                                     gamma=config.lr_decay_rate)
