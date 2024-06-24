@@ -207,6 +207,7 @@ class Train(object):
                                                dataset_size=self.train_dataset_size, loss=print_loss,
                                                last_print_index=last_print_index)
                     print(f'Epoch {epoch+1}, batch {index_batch}/{batch_size}: {print_loss}' )
+                    config.logger.info(f'Epoch {epoch+1}, batch {index_batch}/{batch_size}: {print_loss}')
                     print_loss = 0
                     last_print_index = index_batch
 
