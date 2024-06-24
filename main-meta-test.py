@@ -57,7 +57,7 @@ def _train(training_projects,validating_project,vocab_file_path=None, model_file
     return best_model
 
 
-def _test(model,vocab_file_path,testing_project,num_of_data=-1,seed=1):
+def _test(model,vocab_file_path,testing_project,num_of_data=-1,seed=1,adam=True):
     dataset_dir = "../dataset_v2/"
     if isinstance(model, dict):
         train_instance = train.Train(vocab_file_path=vocab_file_path, model_state_dict=model,
@@ -66,7 +66,7 @@ def _test(model,vocab_file_path,testing_project,num_of_data=-1,seed=1):
                                     nl_path=os.path.join(dataset_dir,f'original/{testing_project}/train.comment'),batch_size=config.support_batch_size,
                                     code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
                                         ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
-                                        ,num_of_data=num_of_data,save_file=False,seed=seed)
+                                        ,num_of_data=num_of_data,save_file=False,seed=seed,adam=adam)
     elif isinstance(model, str):
         train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model,
                                     code_path=os.path.join(dataset_dir,f'original/{testing_project}/train.code')
@@ -74,7 +74,7 @@ def _test(model,vocab_file_path,testing_project,num_of_data=-1,seed=1):
                                     nl_path=os.path.join(dataset_dir,f'original/{testing_project}/train.comment'),batch_size=config.support_batch_size,
                                     code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
                                         ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
-                                        ,num_of_data=num_of_data,save_file=False,seed=seed)        
+                                        ,num_of_data=num_of_data,save_file=False,seed=seed,adam=adam)        
     best_model_test_dict=train_instance.run_train()
     print('\nInitializing the test environments......')
     test_instance = eval.Test(best_model_test_dict,
@@ -120,7 +120,8 @@ if __name__ == '__main__':
     parser.add_argument('-s','--specific',
                         type=str, default=None)
     parser.add_argument('-num','--numtest',
-                        type=int, default=1)    
+                        type=int, default=1)
+    parser.add_argument('-a','--adam', default=True, action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
     training_projects=['dubbo','guava','kafka']
     validating_project='dagger'
@@ -134,6 +135,8 @@ if __name__ == '__main__':
     path = args.path
     dir_list = os.listdir(path)
     total_res={}
+    if args.adam:
+        print("Using adam")
     for num_data in args.numdata:
         print("Num data: ",num_data)
         config.logger.info(f'Num data: {num_data}')
@@ -143,7 +146,7 @@ if __name__ == '__main__':
                 print(f'File name: ',file)
                 config.logger.info(f'File name: {file}')
                 for i in range(num_test):
-                    result=_test(os.path.join(path,file),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=num_data,seed=i)
+                    result=_test(os.path.join(path,file),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=num_data,seed=i,adam=args.adam)
                     if res_dict==None:
                         res_dict=result
                     else:
@@ -159,7 +162,7 @@ if __name__ == '__main__':
             print(f'File name: ',args.specific)
             config.logger.info(f'File name: {args.specific}')
             for i in range(num_test):
-                result=_test(os.path.join(path,args.specific),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=num_data,seed=i)
+                result=_test(os.path.join(path,args.specific),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=num_data,seed=i,adam=args.adam)
                 if res_dict==None:
                         res_dict=result
                 else:

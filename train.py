@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from torch.optim import Adam, lr_scheduler
+from torch.optim import Adam, lr_scheduler,SGD
 from torch.utils.data import DataLoader
 import os
 import time
@@ -23,7 +23,8 @@ class Train(object):
                                                  ast_valid_path=config.valid_sbt_path,
                                                  nl_valid_path=config.valid_nl_path,batch_size=config.batch_size
                                                  ,num_of_data=-1,save_file=True,exact_vocab=False
-                                                 ,meta_baseline=False,code_test_path=None,ast_test_path=None,nl_test_path=None,num_of_data_meta=100,seed=1):
+                                                 ,meta_baseline=False,code_test_path=None,ast_test_path=None,nl_test_path=None,num_of_data_meta=100,seed=1,adam=True
+                                                 ):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -117,7 +118,11 @@ class Train(object):
         #     {'params': self.model.decoder.parameters(), 'lr': config.decoder_lr},
             
         # ], betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
-        self.optimizer=Adam(self.model.parameters(),lr=config.learning_rate)
+        self.adam=adam
+        if adam:
+            self.optimizer=Adam(self.model.parameters(),lr=config.learning_rate)
+        else:
+            self.optimizer=SGD(self.model.parameters(),lr=config.learning_rate)
         if config.use_lr_decay:
             self.lr_scheduler = lr_scheduler.StepLR(self.optimizer,
                                                     step_size=config.lr_decay_every,
@@ -201,6 +206,7 @@ class Train(object):
                                                n_epochs=config.n_epochs, index_batch=index_batch, batch_size=batch_size,
                                                dataset_size=self.train_dataset_size, loss=print_loss,
                                                last_print_index=last_print_index)
+                    print(f'Epoch {epoch+1}, batch {index_batch}/{batch_size}: {print_loss}' )
                     print_loss = 0
                     last_print_index = index_batch
 
@@ -242,7 +248,7 @@ class Train(object):
                     if self.early_stopping.early_stop:
                         break
 
-            if config.use_lr_decay:
+            if config.use_lr_decay and self.adam:
                 self.lr_scheduler.step()
 
         plt.xlabel('every {} batches'.format(config.plot_every))
