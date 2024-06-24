@@ -174,7 +174,8 @@ class Train(object):
         loss.backward()
 
         # address over fit
-        torch.nn.utils.clip_grad_norm_(self.params, 5)
+        if self.adam:
+            torch.nn.utils.clip_grad_norm_(self.params, 5)
 
         self.optimizer.step()
 
