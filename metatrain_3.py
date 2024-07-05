@@ -16,7 +16,7 @@ import eval
 from tqdm import tqdm
 import learn2learn as l2l
 import train
-
+torch.manual_seed(1)
 def tuple_map(fn, t, **kwargs):
     if t is None:
         return None

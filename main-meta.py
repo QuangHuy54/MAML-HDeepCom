@@ -5,8 +5,8 @@ import metatrain_3 as metatrain
 import eval
 import random
 import train
-
-
+import torch
+torch.manual_seed(1)
 def _train(training_projects,validating_project,lr,vocab_file_path=None, model_file_path=None):
     print('\nStarting the training process......\n')
 

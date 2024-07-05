@@ -4,7 +4,8 @@ import config
 import train
 import eval
 import argparse
-
+import torch
+torch.manual_seed(1)
 def _train(testing_project,is_transfer,vocab_file_path=None, model_file_path=None,model_state_dict=None,num_of_data=-1,num_data_baseline=100):
     print('\nStarting the training process......\n')
 

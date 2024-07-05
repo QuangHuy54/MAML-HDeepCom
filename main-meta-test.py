@@ -9,6 +9,9 @@ import train
 import numpy as np
 import torch
 import utils
+import torch
+torch.manual_seed(1)
+
 def _train(training_projects,validating_project,vocab_file_path=None, model_file_path=None):
     print('\nStarting the training process......\n')
 

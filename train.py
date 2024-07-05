@@ -12,6 +12,7 @@ import config
 import data
 import models
 import eval
+torch.manual_seed(1)
 
 
 class Train(object):
