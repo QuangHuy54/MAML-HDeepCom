@@ -61,7 +61,7 @@ class Encoder(nn.Module):
     def __init__(self, vocab_size):
         super(Encoder, self).__init__()
         self.hidden_size = config.hidden_size
-        self.num_directions = 2
+        self.num_directions = 1
 
         # vocab_size: config.code_vocab_size for code encoder, size of sbt vocabulary for ast encoder
         self.embedding = nn.Embedding(vocab_size, config.embedding_dim)
