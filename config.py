@@ -7,8 +7,8 @@ import logging
 # paths
 dataset_dir = '../dataset_v2'
 
-if not os.path.exists(dataset_dir):
-    raise Exception('Dataset directory not exist.')
+# if not os.path.exists(dataset_dir):
+#     raise Exception('Dataset directory not exist.')
 
 train_code_path = os.path.join(dataset_dir, 'train.code')
 train_sbt_path = os.path.join(dataset_dir, 'train.sbt')
@@ -73,7 +73,7 @@ trim_vocab_max_size = True
 
 use_coverage = False
 use_pointer_gen = False
-use_teacher_forcing = True
+use_teacher_forcing = False
 use_check_point = False
 use_lr_decay = True
 use_early_stopping = True
