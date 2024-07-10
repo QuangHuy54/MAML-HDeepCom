@@ -73,7 +73,7 @@ trim_vocab_max_size = True
 
 use_coverage = False
 use_pointer_gen = False
-use_teacher_forcing = False
+use_teacher_forcing = True
 use_check_point = False
 use_lr_decay = True
 use_early_stopping = True

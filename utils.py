@@ -264,7 +264,7 @@ def get_seq_lens(batch: list) -> list:
     return seq_lens
 
 
-def pad_one_batch(batch: list, vocab: Vocab,toDevice=True) -> torch.Tensor:
+def pad_one_batch(batch: list, vocab: Vocab,toDevice=True,size=None) -> torch.Tensor:
     """
     pad batch using _PAD token and get the sequence lengths
     :param batch: one batch, [B, T]
