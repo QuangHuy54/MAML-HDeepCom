@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 import os
 import time
 
-import models_undirectional as models
+import models
 import data
 import utils
 import config
