@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import utils
 import config
 import data
-import models_undirectional as models
+import models
 import eval
 torch.manual_seed(1)
 

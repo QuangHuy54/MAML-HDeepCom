@@ -274,13 +274,19 @@ def pad_one_batch(batch: list, vocab: Vocab,toDevice=True,size=None) -> torch.Te
     :return:
     """
     if size is not None:
-        batch = list(map(lambda list: pad_list(list, size,vocab.word2index[_PAD]), *batch))
+        batch = list(pad_list(list, size,vocab.word2index[_PAD]) for list in batch)
+        if toDevice:
+            result=torch.tensor(batch, device=config.device).long()
+        else:
+            result=torch.tensor(batch).long()
+        print(result.shape)
+        return torch.transpose(result, 0, 1)
     else:
         batch = list(itertools.zip_longest(*batch, fillvalue=vocab.word2index[_PAD]))
-    batch = [list(b) for b in batch]
-    if toDevice:
-        return torch.tensor(batch, device=config.device).long()
-    return torch.tensor(batch).long()
+        batch = [list(b) for b in batch]
+        if toDevice:
+            return torch.tensor(batch, device=config.device).long()
+        return torch.tensor(batch).long()
 
 
 def indices_from_batch(batch: list, vocab: Vocab) -> list:
@@ -385,7 +391,7 @@ def collate_fn(batch, code_vocab, ast_vocab, nl_vocab, is_eval=False) -> \
         nl_batch, nl_seq_lens
 
 
-def unsort_collate_fn(batch, code_vocab, ast_vocab, nl_vocab, raw_nl=False,toDevice=True,size=None):
+def unsort_collate_fn(batch, code_vocab, ast_vocab, nl_vocab, raw_nl=False,toDevice=True,size1=None,size2=None):
     """
     process the batch without sorting
     :param batch: one batch, first dimension is batch, [B]
@@ -409,14 +415,21 @@ def unsort_collate_fn(batch, code_vocab, ast_vocab, nl_vocab, raw_nl=False,toDev
     ast_batch = indices_from_batch(ast_batch, ast_vocab)  # [B, T]
     if not raw_nl:
         nl_batch = indices_from_batch(nl_batch, nl_vocab)  # [B, T]
+    if size1 is not None and size2 is not None:
+        code_seq_lens = [size1]*len(code_batch)
+        ast_seq_lens = [size2]*len(ast_batch)
+        nl_seq_lens = get_seq_lens(nl_batch)
+        code_batch = pad_one_batch(code_batch, code_vocab,toDevice,size1)
+        ast_batch = pad_one_batch(ast_batch, ast_vocab,toDevice,size2)
+    else:
+        code_seq_lens = get_seq_lens(code_batch)
+        ast_seq_lens = get_seq_lens(ast_batch)
+        nl_seq_lens = get_seq_lens(nl_batch)
+        # pad and transpose, [T, B], tensor
+        code_batch = pad_one_batch(code_batch, code_vocab,toDevice,size1)
+        ast_batch = pad_one_batch(ast_batch, ast_vocab,toDevice,size2)
+    
 
-    code_seq_lens = get_seq_lens(code_batch)
-    ast_seq_lens = get_seq_lens(ast_batch)
-    nl_seq_lens = get_seq_lens(nl_batch)
-
-    # pad and transpose, [T, B], tensor
-    code_batch = pad_one_batch(code_batch, code_vocab,toDevice,size)
-    ast_batch = pad_one_batch(ast_batch, ast_vocab,toDevice,size)
     if not raw_nl:
         nl_batch = pad_one_batch(nl_batch, nl_vocab,toDevice)
 
