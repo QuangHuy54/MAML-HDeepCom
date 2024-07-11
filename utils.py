@@ -279,7 +279,7 @@ def pad_one_batch(batch: list, vocab: Vocab,toDevice=True,size=None) -> torch.Te
             result=torch.tensor(batch, device=config.device).long()
         else:
             result=torch.tensor(batch).long()
-        print(result.shape)
+        print(result)
         return torch.transpose(result, 0, 1)
     else:
         batch = list(itertools.zip_longest(*batch, fillvalue=vocab.word2index[_PAD]))
