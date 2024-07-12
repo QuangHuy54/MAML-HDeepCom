@@ -79,7 +79,7 @@ class Encoder(nn.Module):
                 hidden: [2, B, H]
         """
         embedded = self.embedding(inputs)   # [T, B, embedding_dim]
-        print(embedded.shape)
+        #print(embedded.shape)
         packed = pack_padded_sequence(embedded, seq_lens, enforce_sorted=False)
         outputs, hidden = self.gru(packed)
         outputs, _ = pad_packed_sequence(outputs)  # [T, B, 2*H]
