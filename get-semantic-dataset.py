@@ -34,8 +34,8 @@ class RNNDoc2Vec(object):
                 ast_outputs, _ = self.model.ast_encoder(ast_batch, ast_seq_lens)
                 #vecs = vecs.max(1).values if pooling == 'max' else vecs.mean(1)
                 #print(code_outputs.shape)
-                results_1.append(code_outputs.to('cpu'))
-                results_2.append(ast_outputs.to('cpu'))
+                results_1.append(code_outputs)
+                results_2.append(ast_outputs)
             results_1 = torch.cat(results_1,1)
             results_2 = torch.cat(results_2,1)
             results_1 = torch.mean(results_1,1)
@@ -66,7 +66,6 @@ if __name__ == '__main__':
                                                                                                 code_vocab=code_vocab,
                                                                                                 ast_vocab=ast_vocab,
                                                                                                 nl_vocab=nl_vocab,
-                                                                                                toDevice=False,
                                                                                                 size1=360,size2=1005))
         code_output,ast_output = doc2vec.get_vecs(dataloader)
         torch.save(code_output, os.path.join(dataset_dir,f'{project}/all_code_semantic.pt'))
