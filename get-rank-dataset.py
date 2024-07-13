@@ -6,7 +6,7 @@ import os
 import time
 import threading
 import matplotlib.pyplot as plt
-import tqdm
+from rouge import Rouge
 import numpy as np
 import utils
 import config
@@ -14,6 +14,41 @@ import data
 import models
 import eval
 torch.manual_seed(1)
+import argparse
+
+def get_rouge(data_1,data_2):
+    evaluator = Rouge(max_n=2,
+                        apply_avg=False,
+                        apply_max=True)
+    total_score=0
+    for sentence in data_1:
+        scores = evaluator.get_scores([sentence], [data_2])
+        total_score+=scores['rouge-2']['r']
+    total_score/=len(data_1)
+    return total_score
 
 if __name__ == '__main__':
-    
+    projects=['dagger','dubbo','ExoPlayer','flink','guava','kafka','spring-boot','spring-framework','spring-security']
+    dataset_dir = "../dataset_v2/original/"
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('-p', '--project', type=str,default=None)
+    args = parser.parse_args()
+    project=args.project
+    projects.remove(project)
+    rank_code=dict()
+    rank_rouge=dict()
+    rank_length=dict()
+    with open(f'../dataset_v2/original/{project}/all_truncated_final.code',"r") as f:
+        data_original=f.readlines()
+    original_code_semantic=torch.load(os.path.join(dataset_dir,f'{project}/all_code_semantic.pt'), map_location='cpu')
+    original_code_semantic=torch.nn.functional.normalize(original_code_semantic)
+    for target_pro in projects:
+        target_semantic=torch.load(os.path.join(dataset_dir,f'{target_pro}/all_code_semantic.pt'), map_location='cpu')
+        target_semantic=torch.nn.functional.normalize(target_semantic)
+        rank_code[target_pro]=np.sum(np.tensordot(original_code_semantic,target_semantic))
+        with open(f'../dataset_v2/original/{target_pro}/all_truncated_final.code',"r") as f:
+            data_target=f.readlines()
+        rank_rouge[target_pro]=get_rouge(data_original,data_target)
+        
+        
+
