@@ -17,9 +17,9 @@ torch.manual_seed(1)
 import argparse
 
 def get_rouge(data_1,data_2):
-    evaluator = Rouge(max_n=2,
+    evaluator = Rouge(metrics=['rouge-n'],max_n=2,
                         apply_avg=False,
-                        apply_max=True)
+                        apply_best=True)
     total_score=0
     for sentence in data_1:
         scores = evaluator.get_scores([sentence], [data_2])
@@ -35,7 +35,7 @@ def get_total_length(data):
 def list_of_strings(arg):
     return arg.split(',')
 if __name__ == '__main__':
-    projects=['dagger','dubbo','ExoPlayer','flink','guava','kafka','spring-boot','spring-framework','spring-security']
+    original_projects=['dagger','dubbo','ExoPlayer','flink','guava','kafka','spring-boot','spring-framework','spring-security']
     dataset_dir = "../dataset_v2/original/"
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('-p', '--project', type=list_of_strings,default=None)
@@ -43,25 +43,28 @@ if __name__ == '__main__':
     test_projects=args.project
     with open(f'../dataset_v2/original/result_meta_dataset.txt',"w") as f:
         for project in test_projects:
+            projects=original_projects.copy()
             projects.remove(project)
-            rank_code=dict()
-            rank_rouge=dict()
-            rank_length=dict()
+            rank_code={}
+            rank_rouge={}
+            rank_length={}
             with open(f'../dataset_v2/original/{project}/all_truncated_final.code',"r") as f1:
                 data_original=f1.readlines()
             original_code_semantic=torch.load(os.path.join(dataset_dir,f'{project}/all_code_semantic.pt'), map_location='cpu')
-            original_code_semantic=torch.nn.functional.normalize(original_code_semantic)
+            original_code_semantic=torch.max(original_code_semantic, 0).values
+            #print(projects)
             for target_pro in projects:
                 target_semantic=torch.load(os.path.join(dataset_dir,f'{target_pro}/all_code_semantic.pt'), map_location='cpu')
-                target_semantic=torch.nn.functional.normalize(target_semantic)
-                rank_code[target_pro]=np.sum(np.tensordot(original_code_semantic,target_semantic))
+                target_semantic=torch.max(target_semantic, 0).values
+                rank_code[target_pro]=torch.cosine_similarity(original_code_semantic,target_semantic,-1).item()
                 with open(f'../dataset_v2/original/{target_pro}/all_truncated_final.code',"r") as f2:
                     data_target=f2.readlines()
                 rank_rouge[target_pro]=get_rouge(data_original,data_target)
                 rank_length[target_pro]=abs(get_total_length(data_original)-get_total_length(data_target))
-            rank_code=dict(sorted(rank_code.items(), key=lambda item: item[1]).reverse())
-            rank_rouge=dict(sorted(rank_rouge.items(), key=lambda item: item[1]).reverse())
-            rank_length=dict(sorted(rank_length.items(), key=lambda item: item[1]).reverse())
+            #print(rank_code)  
+            rank_code=dict(sorted(rank_code.items(), key=lambda item: item[1],reverse=True))
+            rank_rouge=dict(sorted(rank_rouge.items(), key=lambda item: item[1],reverse=True))
+            rank_length=dict(sorted(rank_length.items(), key=lambda item: item[1]))
             f.write(project+'\n')
             print(project)
             print("Rank code: ",' '.join([x for x in rank_code.keys()]))
@@ -70,7 +73,7 @@ if __name__ == '__main__':
             f.write("Rank code: "+' '.join([x for x in rank_code.keys()])+'\n')
             f.write("Rank rouge: "+' '.join([x for x in rank_rouge.keys()])+'\n')
             f.write("Rank length: "+' '.join([x for x in rank_length.keys()])+'\n')
-            ranking=dict()
+            ranking={}
             for idx,k in enumerate(rank_code):
                 ranking[k]=idx+1
             for idx,k in enumerate(rank_rouge):
@@ -79,9 +82,7 @@ if __name__ == '__main__':
                 ranking[k]=ranking[k]+idx+1
             for key in ranking.keys():
                 ranking[key]=float(ranking[key])/3
-                ranking[key]=float(ranking[key])/3
-                ranking[key]=float(ranking[key])/3
-            ranking=dict(sorted(rank_code.items(), key=lambda item: item[1]).reverse())
+            ranking=dict(sorted(ranking.items(), key=lambda item: item[1]))
             top_4_result=[]
             for idx,key in enumerate(ranking):
                 top_4_result.append(key)
