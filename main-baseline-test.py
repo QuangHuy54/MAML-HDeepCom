@@ -101,10 +101,11 @@ if __name__ == '__main__':
         config.logger.info(f'Num data: {num_data}')
         if args.specific==None:
             for file in dir_list:
-                res_dict=None
+                
                 print(f'File name: ',file)
                 config.logger.info(f'File name: {file}')
                 for num_fold in range(5):
+                    res_dict=None
                     for i in range(num_test):
                         best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path=os.path.join(path,file),num_of_data=num_data,seed=i,adam=args.adam,num_fold=num_fold)
                         result=_test(best_model_dict2,testing_project,num_fold=num_fold)
@@ -126,19 +127,26 @@ if __name__ == '__main__':
         else:
             config.logger.info(f'File name: {args.specific}')
             print(f'File name: ',args.specific)
-            res_dict=None
-            for i in range(num_test):
-                best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path=os.path.join(path,args.specific),num_of_data=num_data,seed=i,adam=args.adam)
+            for num_fold in range(5):
+                res_dict=None
+                for i in range(num_test):
+                    best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path=os.path.join(path,args.specific),num_of_data=num_data,seed=i,adam=args.adam,num_fold=num_fold)
 
-                result=_test(best_model_dict2,testing_project)      
-                if res_dict==None:
-                    res_dict=result
+                    result=_test(best_model_dict2,testing_project,num_fold=num_fold)      
+                    if res_dict==None:
+                        res_dict=result
+                    else:
+                        for key in res_dict.keys():
+                            res_dict[key]=res_dict[key]+result[key]
+                for key in res_dict.keys():
+                    res_dict[key]=res_dict[key]/num_test
+                if num_data not in total_res:
+                    total_res[num_data]=res_dict
                 else:
-                    for key in res_dict.keys():
-                        res_dict[key]=res_dict[key]+result[key]
-            for key in res_dict.keys():
-                res_dict[key]=res_dict[key]/num_test
-            total_res[num_data]=res_dict 
+                    for key in total_res[num_data].keys():
+                        total_res[num_data][key]=total_res[num_data][key]+res_dict[key]
+            for key in total_res[num_data].keys():
+                total_res[num_data][key]=total_res[num_data][key]/5     
             utils.print_test_scores(total_res[num_data],is_average=True)
     # _test(os.path.join('20240514_083750', 'best_epoch-1_batch-last.pt'))
 

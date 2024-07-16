@@ -60,30 +60,30 @@ def _train(training_projects,validating_project,vocab_file_path=None, model_file
     return best_model
 
 
-def _test(model,vocab_file_path,testing_project,num_of_data=-1,seed=1,adam=True):
+def _test(model,vocab_file_path,testing_project,num_fold,num_of_data=-1,seed=1,adam=True):
     dataset_dir = "../dataset_v2/"
     if isinstance(model, dict):
         train_instance = train.Train(vocab_file_path=vocab_file_path, model_state_dict=model,
-                                    code_path=os.path.join(dataset_dir,f'original/{testing_project}/train.code')
-                                    ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/train.sbt'),
-                                    nl_path=os.path.join(dataset_dir,f'original/{testing_project}/train.comment'),batch_size=config.support_batch_size,
+                                    code_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.code')
+                                    ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.sbt'),
+                                    nl_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.comment'),batch_size=config.support_batch_size,
                                     code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
                                         ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
                                         ,num_of_data=num_of_data,save_file=False,seed=seed,adam=adam)
     elif isinstance(model, str):
         train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model,
-                                    code_path=os.path.join(dataset_dir,f'original/{testing_project}/train.code')
-                                    ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/train.sbt'),
-                                    nl_path=os.path.join(dataset_dir,f'original/{testing_project}/train.comment'),batch_size=config.support_batch_size,
+                                    code_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.code')
+                                    ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.sbt'),
+                                    nl_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.comment'),batch_size=config.support_batch_size,
                                     code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
                                         ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
                                         ,num_of_data=num_of_data,save_file=False,seed=seed,adam=adam)        
     best_model_test_dict=train_instance.run_train()
     print('\nInitializing the test environments......')
     test_instance = eval.Test(best_model_test_dict,
-                              code_path=os.path.join(dataset_dir,f'original/{testing_project}/valid.code')
-                                ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/valid.sbt'),
-                                nl_path=os.path.join(dataset_dir,f'original/{testing_project}/valid.comment'))
+                              code_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_test.code')
+                                ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_test.sbt'),
+                                nl_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_test.comment'))
     print('Environments built successfully.\n')
     config.logger.info('Size of test dataset: {}'.format(test_instance.dataset_size))
 
@@ -145,11 +145,36 @@ if __name__ == '__main__':
         config.logger.info(f'Num data: {num_data}')
         if args.specific==None:
             for file in dir_list:
-                res_dict=None
                 print(f'File name: ',file)
                 config.logger.info(f'File name: {file}')
+                for num_fold in range(5):
+                    res_dict=None
+                    for i in range(num_test):
+                        result=_test(os.path.join(path,file),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=num_data,seed=i,adam=args.adam,num_fold=num_fold)
+                        if res_dict==None:
+                            res_dict=result
+                        else:
+                            for key in res_dict.keys():
+                                res_dict[key]=res_dict[key]+result[key]
+                    for key in res_dict.keys():
+                        res_dict[key]=res_dict[key]/num_test
+                    if num_data not in total_res:
+                        total_res[num_data]=res_dict
+                    else:
+                        for key in total_res[num_data].keys():
+                            total_res[num_data][key]=total_res[num_data][key]+res_dict[key]
+                for key in total_res[num_data].keys():
+                    total_res[num_data][key]=total_res[num_data][key]/5              
+                utils.print_test_scores(total_res[num_data],is_average=True)
+            #  _test(os.path.join('20240511_132257', 'model_valid-loss-3.3848_epoch-14_batch--1.pt'))
+        else:
+            res_dict=None
+            print(f'File name: ',args.specific)
+            config.logger.info(f'File name: {args.specific}')
+            for num_fold in range(5):
+                res_dict=None
                 for i in range(num_test):
-                    result=_test(os.path.join(path,file),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=num_data,seed=i,adam=args.adam)
+                    result=_test(os.path.join(path,args.specific),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=num_data,seed=i,adam=args.adam,num_fold=num_fold)
                     if res_dict==None:
                         res_dict=result
                     else:
@@ -157,23 +182,13 @@ if __name__ == '__main__':
                             res_dict[key]=res_dict[key]+result[key]
                 for key in res_dict.keys():
                     res_dict[key]=res_dict[key]/num_test
-                total_res[num_data]=res_dict
-                utils.print_test_scores(total_res[num_data],is_average=True)
-            #  _test(os.path.join('20240511_132257', 'model_valid-loss-3.3848_epoch-14_batch--1.pt'))
-        else:
-            res_dict=None
-            print(f'File name: ',args.specific)
-            config.logger.info(f'File name: {args.specific}')
-            for i in range(num_test):
-                result=_test(os.path.join(path,args.specific),vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=num_data,seed=i,adam=args.adam)
-                if res_dict==None:
-                        res_dict=result
+                if num_data not in total_res:
+                    total_res[num_data]=res_dict
                 else:
-                    for key in res_dict.keys():
-                        res_dict[key]=res_dict[key]+result[key]
-            for key in res_dict.keys():
-                res_dict[key]=res_dict[key]/num_test
-            total_res[num_data]=res_dict
+                    for key in total_res[num_data].keys():
+                        total_res[num_data][key]=total_res[num_data][key]+res_dict[key]
+            for key in total_res[num_data].keys():
+                total_res[num_data][key]=total_res[num_data][key]/5  
             utils.print_test_scores(total_res[num_data],is_average=True)
     
     for num_data in args.numdata:
