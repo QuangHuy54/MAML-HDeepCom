@@ -6,7 +6,7 @@ import eval
 import utils
 import torch
 torch.manual_seed(1)
-def _train(testing_project,is_transfer,vocab_file_path=None, model_file_path=None,model_state_dict=None,num_of_data=-1,seed=1,adam=True):
+def _train(testing_project,is_transfer,num_fold,vocab_file_path=None, model_file_path=None,model_state_dict=None,num_of_data=-1,seed=1,adam=True):
     print('\nStarting the training process......\n')
 
     if vocab_file_path:
@@ -31,8 +31,8 @@ def _train(testing_project,is_transfer,vocab_file_path=None, model_file_path=Non
                                     ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
                                     ,num_of_data=num_of_data,seed=seed,adam=adam)
     else:
-        train_instance = train.Train(vocab_file_path=vocab_file_path,code_path=f'../dataset_v2/original/{testing_project}/train.code'
-                                    ,ast_path=f'../dataset_v2/original/{testing_project}/train.sbt',nl_path=f'../dataset_v2/original/{testing_project}/train.comment'
+        train_instance = train.Train(vocab_file_path=vocab_file_path,code_path=f'../dataset_v2/original/{testing_project}/fold_{num_fold}_train.code'
+                                    ,ast_path=f'../dataset_v2/original/{testing_project}/fold_{num_fold}_train.sbt',nl_path=f'../dataset_v2/original/{testing_project}/fold_{num_fold}_train.comment'
                                     ,code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
                                     ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
                                     ,model_state_dict=model_state_dict
@@ -61,9 +61,9 @@ def _train(testing_project,is_transfer,vocab_file_path=None, model_file_path=Non
     return best_model
 
 
-def _test(model,testing_project):
+def _test(model,testing_project,num_fold):
     print('\nInitializing the test environments......')
-    test_instance = eval.Test(model,code_path=f'../dataset_v2/original/{testing_project}/valid.code',ast_path=f'../dataset_v2/original/{testing_project}/valid.sbt',nl_path=f'../dataset_v2/original/{testing_project}/valid.comment')
+    test_instance = eval.Test(model,code_path=f'../dataset_v2/original/{testing_project}/fold_{num_fold}_test.code',ast_path=f'../dataset_v2/original/{testing_project}/fold_{num_fold}_test.sbt',nl_path=f'../dataset_v2/original/{testing_project}/fold_{num_fold}_test.comment')
     print('Environments built successfully.\n')
     print('Size of test dataset:', test_instance.dataset_size)
     config.logger.info('Size of test dataset: {}'.format(test_instance.dataset_size))
@@ -104,17 +104,24 @@ if __name__ == '__main__':
                 res_dict=None
                 print(f'File name: ',file)
                 config.logger.info(f'File name: {file}')
-                for i in range(num_test):
-                    best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path=os.path.join(path,file),num_of_data=num_data,seed=i,adam=args.adam)
-                    result=_test(best_model_dict2,testing_project)
-                    if res_dict==None:
-                        res_dict=result
+                for num_fold in range(5):
+                    for i in range(num_test):
+                        best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path=os.path.join(path,file),num_of_data=num_data,seed=i,adam=args.adam,num_fold=num_fold)
+                        result=_test(best_model_dict2,testing_project,num_fold=num_fold)
+                        if res_dict==None:
+                            res_dict=result
+                        else:
+                            for key in res_dict.keys():
+                                res_dict[key]=res_dict[key]+result[key]
+                    for key in res_dict.keys():
+                        res_dict[key]=res_dict[key]/num_test
+                    if num_data not in total_res:
+                        total_res[num_data]=res_dict
                     else:
-                        for key in res_dict.keys():
-                            res_dict[key]=res_dict[key]+result[key]
-                for key in res_dict.keys():
-                    res_dict[key]=res_dict[key]/num_test
-                total_res[num_data]=res_dict
+                        for key in total_res[num_data].keys():
+                            total_res[num_data][key]=total_res[num_data][key]+res_dict[key]
+                for key in total_res[num_data].keys():
+                    total_res[num_data][key]=total_res[num_data][key]/5              
                 utils.print_test_scores(total_res[num_data],is_average=True)
         else:
             config.logger.info(f'File name: {args.specific}')
