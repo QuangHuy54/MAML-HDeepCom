@@ -16,6 +16,8 @@ import eval
 torch.manual_seed(1)
 import argparse
 import multiprocessing 
+import sys
+import builtins
 
 def get_rouge(data_1,data_2):
     evaluator = Rouge(metrics=['rouge-n'],max_n=2,
@@ -58,10 +60,10 @@ def get_result(project,projects):
     rank_length=dict(sorted(rank_length.items(), key=lambda item: item[1]))
     with open(f'../dataset_v2/original/{project}/result_meta_dataset.txt',"w") as f:
         f.write(project+'\n')
-        print(project)
-        print("Rank code: ",' '.join([x for x in rank_code.keys()]))
-        print("Rank rouge: ",' '.join([x for x in rank_rouge.keys()]))
-        print("Rank length: ",' '.join([x for x in rank_length.keys()]))
+        print(project, flush=True)
+        print("Rank code: ",' '.join([x for x in rank_code.keys()]), flush=True)
+        print("Rank rouge: ",' '.join([x for x in rank_rouge.keys()]), flush=True)
+        print("Rank length: ",' '.join([x for x in rank_length.keys()]), flush=True)
         f.write("Rank code: "+' '.join([x for x in rank_code.keys()])+'\n')
         f.write("Rank rouge: "+' '.join([x for x in rank_rouge.keys()])+'\n')
         f.write("Rank length: "+' '.join([x for x in rank_length.keys()])+'\n')
@@ -80,7 +82,7 @@ def get_result(project,projects):
             top_4_result.append(key)
             if idx==3:
                 break
-        print("Top 4: ",' '.join([x for x in top_4_result]))
+        print("Top 4: ",' '.join([x for x in top_4_result]), flush=True)
         f.write("Top 4: "+' '.join([x for x in top_4_result])+'\n')  
 
 if __name__ == '__main__':
@@ -97,13 +99,13 @@ if __name__ == '__main__':
         projects=original_projects.copy()
         projects.remove(project)
         p=multiprocessing.Process(target=get_result,args=(project,projects))
-        print("Run process ",i)
+        print(f"Run process {i}", flush=True)
         p.start()
         list_process.append(p)
 
     for i in range(9):
         list_process[i].join() 
-        print("Finish process ",i)   
+        print(f"Finish process {i}", flush=True)   
     # with open(f'../dataset_v2/original/result_meta_dataset.txt',"w") as f:
     #     for project in test_projects:
     #         projects=original_projects.copy()
