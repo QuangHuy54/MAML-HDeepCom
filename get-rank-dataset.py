@@ -41,49 +41,81 @@ def get_result(project,projects):
     rank_code={}
     rank_rouge={}
     rank_length={}
+    rank_ast={}
     with open(f'../dataset_v2/original/{project}/all_truncated_final.code',"r") as f1:
         data_original=f1.readlines()
     original_code_semantic=torch.load(os.path.join(dataset_dir,f'{project}/all_code_semantic.pt'), map_location='cpu')
     original_code_semantic=torch.max(original_code_semantic, 0).values
+    original_ast_semantic=torch.load(os.path.join(dataset_dir,f'{project}/all_ast_semantic.pt'), map_location='cpu')
+    original_ast_semantic=torch.max(original_ast_semantic, 0).values
     #print(projects)
     for target_pro in projects:
         target_semantic=torch.load(os.path.join(dataset_dir,f'{target_pro}/all_code_semantic.pt'), map_location='cpu')
         target_semantic=torch.max(target_semantic, 0).values
+        target_ast_semantic=torch.load(os.path.join(dataset_dir,f'{target_pro}/all_ast_semantic.pt'), map_location='cpu')
+        target_ast_semantic=torch.max(target_ast_semantic, 0).values
         rank_code[target_pro]=torch.cosine_similarity(original_code_semantic,target_semantic,-1).item()
+        rank_ast[target_pro]=torch.cosine_similarity(original_ast_semantic,target_ast_semantic,-1).item()
         with open(f'../dataset_v2/original/{target_pro}/all_truncated_final.code',"r") as f2:
             data_target=f2.readlines()
         rank_rouge[target_pro]=get_rouge(data_original,data_target)
         rank_length[target_pro]=abs(get_total_length(data_original)-get_total_length(data_target))
     #print(rank_code)  
     rank_code=dict(sorted(rank_code.items(), key=lambda item: item[1],reverse=True))
+    rank_ast=dict(sorted(rank_ast.items(), key=lambda item: item[1],reverse=True))
     rank_rouge=dict(sorted(rank_rouge.items(), key=lambda item: item[1],reverse=True))
     rank_length=dict(sorted(rank_length.items(), key=lambda item: item[1]))
     with open(f'../dataset_v2/original/{project}/result_meta_dataset.txt',"w") as f:
         f.write(project+'\n')
+        f.flush()
         print(project, flush=True)
         print("Rank code: ",' '.join([x for x in rank_code.keys()]), flush=True)
         print("Rank rouge: ",' '.join([x for x in rank_rouge.keys()]), flush=True)
         print("Rank length: ",' '.join([x for x in rank_length.keys()]), flush=True)
+        print("Rank ast: ",' '.join([x for x in rank_ast.keys()]), flush=True)
         f.write("Rank code: "+' '.join([x for x in rank_code.keys()])+'\n')
+        f.flush()
         f.write("Rank rouge: "+' '.join([x for x in rank_rouge.keys()])+'\n')
+        f.flush()
         f.write("Rank length: "+' '.join([x for x in rank_length.keys()])+'\n')
+        f.flush()
+        f.write("Rank ast: "+' '.join([x for x in rank_length.keys()])+'\n')
+        f.flush()
         ranking={}
+        ranking_new={}
         for idx,k in enumerate(rank_code):
             ranking[k]=idx+1
+            ranking_new[k]=idx+1
         for idx,k in enumerate(rank_rouge):
             ranking[k]=ranking[k]+idx+1
+            ranking_new[k]=ranking_new[k]+idx+1
         for idx,k in enumerate(rank_length):
             ranking[k]=ranking[k]+idx+1
+            ranking_new[k]=ranking_new[k]+idx+1
+        for idx,k in enumerate(rank_ast):
+            ranking_new[k]=ranking_new[k]+idx+1
         for key in ranking.keys():
             ranking[key]=float(ranking[key])/3
+        for key in ranking_new.keys():
+            ranking_new[key]=float(ranking_new[key])/4
         ranking=dict(sorted(ranking.items(), key=lambda item: item[1]))
+        ranking_new=dict(sorted(ranking_new.items(), key=lambda item: item[1]))
         top_4_result=[]
+        top_4_result_new=[]
         for idx,key in enumerate(ranking):
             top_4_result.append(key)
             if idx==3:
                 break
-        print("Top 4: ",' '.join([x for x in top_4_result]), flush=True)
-        f.write("Top 4: "+' '.join([x for x in top_4_result])+'\n')  
+        for idx,key in enumerate(ranking_new):
+            top_4_result_new.append(key)
+            if idx==3:
+                break
+        print("Top 4 (not include ast): ",' '.join([x for x in top_4_result]), flush=True)
+        f.write("Top 4 (not include ast): "+' '.join([x for x in top_4_result])+'\n')
+        f.flush()
+        print("Top 4: ",' '.join([x for x in top_4_result_new]), flush=True)
+        f.write("Top 4: "+' '.join([x for x in top_4_result_new])+'\n')
+        f.flush()  
 
 if __name__ == '__main__':
     original_projects=['dagger','dubbo','ExoPlayer','flink','guava','kafka','spring-boot','spring-framework','spring-security']
