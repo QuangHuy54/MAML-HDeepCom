@@ -126,7 +126,7 @@ if __name__ == '__main__':
     test_projects=args.project
     list_process=[]        
     q=multiprocessing.Queue()
-    for i in range(9):
+    for i in range(len(test_projects)):
         project=test_projects[i]
         projects=original_projects.copy()
         projects.remove(project)
@@ -135,7 +135,7 @@ if __name__ == '__main__':
         p.start()
         list_process.append(p)
 
-    for i in range(9):
+    for i in range(len(test_projects)):
         list_process[i].join() 
         print(f"Finish process {i}", flush=True)   
     # with open(f'../dataset_v2/original/result_meta_dataset.txt',"w") as f:
