@@ -148,12 +148,12 @@ class Train(object):
         self.best_epoch_batch: (int, int) = (None, None)
 
         # eval instance
-        self.eval_instance = eval.Eval(self.get_cur_state_dict(),code_path=code_valid_path,ast_path=ast_valid_path,nl_path=nl_valid_path,vocab_path=vocab_file_path)
         if validating_project is not None:
             self.eval_instance = eval.Eval(self.get_cur_state_dict(),code_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated_final.code'),
                                                 ast_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated.sbt'),
                                                 nl_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated_final.comment'))
-
+        else:
+            self.eval_instance = eval.Eval(self.get_cur_state_dict(),code_path=code_valid_path,ast_path=ast_valid_path,nl_path=nl_valid_path,vocab_path=vocab_file_path)
         # early stopping
         self.early_stopping = None
         if config.use_early_stopping:
