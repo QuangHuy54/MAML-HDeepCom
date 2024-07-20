@@ -25,7 +25,7 @@ class Train(object):
                                                  nl_valid_path=config.valid_nl_path,batch_size=config.batch_size
                                                  ,num_of_data=-1,save_file=True,exact_vocab=False
                                                  ,meta_baseline=False,code_test_path=None,ast_test_path=None,nl_test_path=None,num_of_data_meta=100,seed=1,adam=True
-                                                 ):
+                                                 ,training_projects=None,validating_project=None):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -38,14 +38,18 @@ class Train(object):
                                                  ast_path,
                                                  nl_path,num_of_data,seed)
         if meta_baseline==True:
-            self.train_dataset_test= data.CodePtrDataset(code_test_path,
-                                                 ast_test_path,
-                                                 nl_test_path,num_of_data_meta)           
-            self.train_dataset=torch.utils.data.ConcatDataset([self.train_dataset, self.train_dataset_test])
+            self.train_dataset=[]
+            dataset_dir = "../dataset_v2/original/"
+            for project in training_projects:
+                train_data= data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/all_truncated_final.code'),
+                                                ast_path=os.path.join(dataset_dir,f'{project}/all_truncated.sbt'),
+                                                nl_path=os.path.join(dataset_dir,f'{project}/all_truncated_final.comment'))
+                self.train_dataset.append(train_data)     
+            self.train_dataset=torch.utils.data.ConcatDataset(self.train_dataset)
         self.train_dataset_size = len(self.train_dataset)
         self.train_dataloader = DataLoader(dataset=self.train_dataset,
                                            batch_size=batch_size,
-                                           shuffle=False,
+                                           shuffle=True,
                                            collate_fn=lambda *args: utils.unsort_collate_fn(args,
                                                                                             code_vocab=self.code_vocab,
                                                                                             ast_vocab=self.ast_vocab,
@@ -136,6 +140,10 @@ class Train(object):
 
         # eval instance
         self.eval_instance = eval.Eval(self.get_cur_state_dict(),code_path=code_valid_path,ast_path=ast_valid_path,nl_path=nl_valid_path,vocab_path=vocab_file_path)
+        if validating_project is not None:
+            self.eval_instance = eval.Eval(self.get_cur_state_dict(),code_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated_final.code'),
+                                                ast_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated.sbt'),
+                                                nl_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated_final.comment'))
 
         # early stopping
         self.early_stopping = None

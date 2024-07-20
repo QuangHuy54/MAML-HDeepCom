@@ -6,7 +6,7 @@ import eval
 import argparse
 import torch
 torch.manual_seed(1)
-def _train(testing_project,is_transfer,vocab_file_path=None, model_file_path=None,model_state_dict=None,num_of_data=-1):
+def _train(testing_project,is_transfer,training_projects,validating_project,vocab_file_path=None, model_file_path=None,model_state_dict=None,num_of_data=-1):
     print('\nStarting the training process......\n')
 
     if vocab_file_path:
@@ -29,7 +29,7 @@ def _train(testing_project,is_transfer,vocab_file_path=None, model_file_path=Non
                                     ,ast_path=f'../dataset_v2/original/{testing_project}/train_transfer.sbt',nl_path=f'../dataset_v2/original/{testing_project}/train_transfer.comment'
                                     ,code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
                                     ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
-                                    ,num_of_data=num_of_data)
+                                    ,num_of_data=num_of_data,meta_baseline=True,training_projects=training_projects,validating_project=validating_project)
     else:
         train_instance = train.Train(vocab_file_path=vocab_file_path,code_path=f'../dataset_v2/original/{testing_project}/train.code'
                                     ,ast_path=f'../dataset_v2/original/{testing_project}/train.sbt',nl_path=f'../dataset_v2/original/{testing_project}/train.comment'
@@ -73,14 +73,46 @@ def _test(model,testing_projet):
     test_instance.run_test()
     print('Testing is done.')
 
+def list_of_strings(arg):
+    return arg.split(',')
 
 if __name__ == '__main__':
+    project2sources = {
+        'spring-boot': ['spring-framework', 'spring-security', 'guava'], 
+        'spring-framework': ['spring-boot', 'spring-security', 'guava'], 
+        'spring-security': ['spring-boot', 'spring-framework', 'guava'], 
+        'guava': ['spring-framework', 'ExoPlayer', 'dagger'], 
+        'ExoPlayer': ['guava', 'dagger', 'kafka'], 
+        'dagger': ['guava', 'ExoPlayer', 'kafka'], 
+        'kafka': ['dubbo', 'flink', 'guava'], 
+        'dubbo': ['kafka', 'flink', 'guava'], 
+        'flink': ['kafka', 'dubbo', 'guava'], 
+    }
+    project2validate={        
+        'spring-boot': 'dagger', 
+        'spring-framework': 'dagger', 
+        'spring-security': 'dagger', 
+        'guava': 'dubbo', 
+        'ExoPlayer': 'dubbo', 
+        'dagger': 'dubbo', 
+        'kafka': 'dagger', 
+        'dubbo': 'dagger', 
+        'flink': 'dagger', }
     parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('-v', '--validate', type=str,default=None)
+
     parser.add_argument('-t','--test',
                         type=str, default='flink')
+    parser.add_argument('-tr','--train',type=list_of_strings,default=None)
     args = parser.parse_args()
     testing_project=args.test
-    best_model_dict = _train(testing_project,is_transfer=False,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path='../pretrain_model/pretrain.pt')
+    if args.train==None:
+        training_projects=project2sources[args.test]
+    else:
+        training_projects=args.train
+
+    validating_project=args.validate if args.validate != None else project2validate[testing_project]  
+    best_model_dict = _train(testing_project,is_transfer=False,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path='../pretrain_model/pretrain.pt',)
 
     # best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_state_dict=best_model_dict,num_of_data=100)
 
