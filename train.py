@@ -25,7 +25,7 @@ class Train(object):
                                                  nl_valid_path=config.valid_nl_path,batch_size=config.batch_size
                                                  ,num_of_data=-1,save_file=True,exact_vocab=False
                                                  ,meta_baseline=False,code_test_path=None,ast_test_path=None,nl_test_path=None,num_of_data_meta=100,seed=1,adam=True
-                                                 ,training_projects=None,validating_project=None):
+                                                 ,training_projects=None,validating_project=None,is_test=False):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -47,14 +47,22 @@ class Train(object):
                 self.train_dataset.append(train_data)     
             self.train_dataset=torch.utils.data.ConcatDataset(self.train_dataset)
         self.train_dataset_size = len(self.train_dataset)
-        self.train_dataloader = DataLoader(dataset=self.train_dataset,
-                                           batch_size=batch_size,
-                                           shuffle=True,
-                                           collate_fn=lambda *args: utils.unsort_collate_fn(args,
-                                                                                            code_vocab=self.code_vocab,
-                                                                                            ast_vocab=self.ast_vocab,
-                                                                                            nl_vocab=self.nl_vocab))
-
+        if is_test==True:
+            self.train_dataloader = DataLoader(dataset=self.train_dataset,
+                                            batch_size=batch_size,
+                                            shuffle=False,
+                                            collate_fn=lambda *args: utils.unsort_collate_fn(args,
+                                                                                                code_vocab=self.code_vocab,
+                                                                                                ast_vocab=self.ast_vocab,
+                                                                                                nl_vocab=self.nl_vocab))
+        else:
+            self.train_dataloader = DataLoader(dataset=self.train_dataset,
+                                            batch_size=batch_size,
+                                            shuffle=True,
+                                            collate_fn=lambda *args: utils.unsort_collate_fn(args,
+                                                                                                code_vocab=self.code_vocab,
+                                                                                                ast_vocab=self.ast_vocab,
+                                                                                                nl_vocab=self.nl_vocab))         
         # vocab
         self.code_vocab: utils.Vocab
         self.ast_vocab: utils.Vocab

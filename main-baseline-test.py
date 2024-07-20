@@ -6,7 +6,7 @@ import eval
 import utils
 import torch
 torch.manual_seed(1)
-def _train(testing_project,is_transfer,num_fold,vocab_file_path=None, model_file_path=None,model_state_dict=None,num_of_data=-1,seed=1,adam=True):
+def _train(testing_project,is_transfer,num_fold,validating_project,vocab_file_path=None, model_file_path=None,model_state_dict=None,num_of_data=-1,seed=1,adam=True):
     print('\nStarting the training process......\n')
 
     if vocab_file_path:
@@ -33,10 +33,10 @@ def _train(testing_project,is_transfer,num_fold,vocab_file_path=None, model_file
     else:
         train_instance = train.Train(vocab_file_path=vocab_file_path,code_path=f'../dataset_v2/original/{testing_project}/fold_{num_fold}_train.code'
                                     ,ast_path=f'../dataset_v2/original/{testing_project}/fold_{num_fold}_train.sbt',nl_path=f'../dataset_v2/original/{testing_project}/fold_{num_fold}_train.comment'
-                                    ,code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
-                                    ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
+                                    ,code_valid_path=f'../dataset_v2/original/{validating_project}/all_truncated_final.code',nl_valid_path=f'../dataset_v2/original/{validating_project}/all_truncated_final.comment',
+                                    ast_valid_path=f'../dataset_v2/original/{validating_project}/all_truncated.sbt'
                                     ,model_state_dict=model_state_dict
-                                    ,num_of_data=num_of_data,model_file_path=model_file_path,save_file=False,seed=seed,adam=adam)        
+                                    ,num_of_data=num_of_data,model_file_path=model_file_path,save_file=False,seed=seed,adam=adam,is_test=True)        
     print('Environments built successfully.\n')
     print('Size of train dataset:', train_instance.train_dataset_size)
 
@@ -84,6 +84,8 @@ if __name__ == '__main__':
                         type=list_of_ints, default=[100])
     parser.add_argument('-s','--specific',
                         type=str, default=None)
+    parser.add_argument('-v','--validate',
+                        type=str)
     parser.add_argument('-num','--numtest',
                         type=int, default=1)
     parser.add_argument('--adam', action=argparse.BooleanOptionalAction)
@@ -92,6 +94,7 @@ if __name__ == '__main__':
     num_test=args.numtest
     testing_project=args.testing
     path = args.path
+    validating_project=args.validate
     dir_list = os.listdir(path)
     total_res={}
     if args.adam:
@@ -107,7 +110,7 @@ if __name__ == '__main__':
                 for num_fold in range(5):
                     res_dict=None
                     for i in range(num_test):
-                        best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path=os.path.join(path,file),num_of_data=num_data,seed=i,adam=args.adam,num_fold=num_fold)
+                        best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path=os.path.join(path,file),num_of_data=num_data,seed=i,adam=args.adam,num_fold=num_fold,validating_project=validating_project)
                         result=_test(best_model_dict2,testing_project,num_fold=num_fold)
                         if res_dict==None:
                             res_dict=result
@@ -130,7 +133,7 @@ if __name__ == '__main__':
             for num_fold in range(5):
                 res_dict=None
                 for i in range(num_test):
-                    best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path=os.path.join(path,args.specific),num_of_data=num_data,seed=i,adam=args.adam,num_fold=num_fold)
+                    best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path=os.path.join(path,args.specific),num_of_data=num_data,seed=i,adam=args.adam,num_fold=num_fold,validating_project=validating_project)
 
                     result=_test(best_model_dict2,testing_project,num_fold=num_fold)      
                     if res_dict==None:
