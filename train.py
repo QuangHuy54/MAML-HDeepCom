@@ -34,18 +34,19 @@ class Train(object):
         torch.manual_seed(seed)
         # dataset
         self.salf_file=save_file
-        self.train_dataset = data.CodePtrDataset(code_path,
-                                                 ast_path,
-                                                 nl_path,num_of_data,seed)
         if meta_baseline==True:
-            self.train_dataset=[]
+            train_dataset=[]
             dataset_dir = "../dataset_v2/original/"
             for project in training_projects:
                 train_data= data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/all_truncated_final.code'),
                                                 ast_path=os.path.join(dataset_dir,f'{project}/all_truncated.sbt'),
                                                 nl_path=os.path.join(dataset_dir,f'{project}/all_truncated_final.comment'))
-                self.train_dataset.append(train_data)     
-            self.train_dataset=torch.utils.data.ConcatDataset(self.train_dataset)
+                train_dataset.append(train_data)     
+            self.train_dataset=torch.utils.data.ConcatDataset(train_dataset)
+        else:
+            self.train_dataset = data.CodePtrDataset(code_path,
+                                                 ast_path,
+                                                 nl_path,num_of_data,seed)
         self.train_dataset_size = len(self.train_dataset)
         if is_test==True:
             self.train_dataloader = DataLoader(dataset=self.train_dataset,
