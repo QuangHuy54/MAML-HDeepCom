@@ -88,7 +88,7 @@ if __name__ == '__main__':
                         type=str)
     parser.add_argument('-num','--numtest',
                         type=int, default=1)
-    parser.add_argument('--adam', action=argparse.BooleanOptionalAction)
+    parser.add_argument('--adam', action=argparse.BooleanOptionalAction, default=True)
 
     args = parser.parse_args()
     num_test=args.numtest
