@@ -85,7 +85,10 @@ def _test(model,vocab_file_path,testing_project,num_fold,validating_project,num_
                                 nl_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_test.comment'))
     print('Environments built successfully.\n')
     config.logger.info('Size of test dataset: {}'.format(test_instance.dataset_size))
-
+    if config.validate_during_train:
+        print('\nValidate every', config.validate_every, 'batches and each epoch.')
+        print('Size of validation dataset:', train_instance.eval_instance.dataset_size)
+        config.logger.info('Size of validation dataset: {}'.format(train_instance.eval_instance.dataset_size))
     config.logger.info('Start Testing.')
     print('\nStart Testing......')
     result=test_instance.run_test()

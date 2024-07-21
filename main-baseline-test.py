@@ -35,7 +35,7 @@ def _train(testing_project,is_transfer,num_fold,validating_project,vocab_file_pa
                                     ,ast_path=f'../dataset_v2/original/{testing_project}/fold_{num_fold}_train.sbt',nl_path=f'../dataset_v2/original/{testing_project}/fold_{num_fold}_train.comment'
                                     ,code_valid_path=f'../dataset_v2/original/{validating_project}/all_truncated_final.code',nl_valid_path=f'../dataset_v2/original/{validating_project}/all_truncated_final.comment',
                                     ast_valid_path=f'../dataset_v2/original/{validating_project}/all_truncated.sbt'
-                                    ,model_state_dict=model_state_dict
+                                    ,model_state_dict=model_state_dict,batch_size=config.support_batch_size
                                     ,num_of_data=num_of_data,model_file_path=model_file_path,save_file=False,seed=seed,adam=adam,is_test=True)        
     print('Environments built successfully.\n')
     print('Size of train dataset:', train_instance.train_dataset_size)
