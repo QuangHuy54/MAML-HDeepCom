@@ -57,7 +57,8 @@ def _train(testing_project,is_transfer,num_fold,validating_project,vocab_file_pa
     #     writer.add_graph(train_instance.model, (batch, batch_size, train_instance.nl_vocab))
     #     break
     # writer.close()
-
+    del train_instance
+    torch.cuda.empty_cache()
     return best_model
 
 
@@ -72,6 +73,8 @@ def _test(model,testing_project,num_fold):
     print('\nStart Testing......')
     result=test_instance.run_test()
     print('Testing is done.')
+    del test_instance
+    torch.cuda.empty_cache()
     return result
 
 def list_of_ints(arg):

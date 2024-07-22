@@ -93,6 +93,8 @@ def _test(model,vocab_file_path,testing_project,num_fold,validating_project,num_
     print('\nStart Testing......')
     result=test_instance.run_test()
     print('Testing is done.')
+    del train_instance,test_instance
+    torch.cuda.empty_cache()
     return result
 
 
