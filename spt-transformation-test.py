@@ -178,8 +178,6 @@ if __name__ == '__main__':
             print("Num data: ",num_data)
             config.logger.info(f'Num data: {num_data}')
             res_dict=None
-            print(f'File name: ',args.specific)
-            config.logger.info(f'File name: {args.specific}')
             for num_fold in range(5):
                 res_dict=None
                 for i in range(num_test):
@@ -207,6 +205,7 @@ if __name__ == '__main__':
         full_res[testing_project]=total_res
     for testing_project in args.testing:
         print(testing_project,':')
+        config.logger.info(f'{testing_project}:')
         for num_data in args.numdata:
             print(f'Num data: {num_data}')
             config.logger.info(f'Num data: {num_data}')
