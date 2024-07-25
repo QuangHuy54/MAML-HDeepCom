@@ -81,8 +81,8 @@ def _test(model,vocab_file_path,testing_project,num_fold,validating_project,num_
     print('\nInitializing the test environments......')
     test_instance = eval.Test(best_model_test_dict,
                               code_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_test_SPT.code')
-                                ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_test_SPT.sbt'),
-                                nl_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_test_SPT.comment'))
+                                ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_test.sbt'),
+                                nl_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_test.comment'))
     print('Environments built successfully.\n')
     config.logger.info('Size of test dataset: {}'.format(test_instance.dataset_size))
     if config.validate_during_train:
