@@ -59,24 +59,42 @@ def _train(training_projects,validating_project,vocab_file_path=None, model_file
 
     return best_model
 
-def _test(model,vocab_file_path,testing_project,num_fold,validating_project,num_of_data=-1,seed=1,adam=True):
+def _test(model,vocab_file_path,testing_project,num_fold,validating_project,num_of_data=-1,seed=1,adam=True,trainspt=False):
     dataset_dir = "../dataset_v2/"
-    if isinstance(model, dict):
-        train_instance = train.Train(vocab_file_path=vocab_file_path, model_state_dict=model,
-                                    code_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.code')
-                                    ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.sbt'),
-                                    nl_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.comment'),batch_size=config.support_batch_size,
-                                    code_valid_path=os.path.join(dataset_dir,f'original/{validating_project}/all_truncated_final.code'),nl_valid_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated_final.comment'),
-                                        ast_valid_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated.sbt')
-                                        ,num_of_data=num_of_data,save_file=False,seed=seed,adam=adam,is_test=True)
-    elif isinstance(model, str):
-        train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model,
-                                    code_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.code')
-                                    ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.sbt'),
-                                    nl_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.comment'),batch_size=config.support_batch_size,
-                                    code_valid_path=os.path.join(dataset_dir,f'original/{validating_project}/all_truncated_final.code'),nl_valid_path=os.path.join(dataset_dir,f'original/{validating_project}/all_truncated_final.comment'),
-                                        ast_valid_path=os.path.join(dataset_dir,f'original/{validating_project}/all_truncated.sbt')
-                                        ,num_of_data=num_of_data,save_file=False,seed=seed,adam=adam,is_test=True)        
+    if trainspt is True:
+        if isinstance(model, dict):
+                train_instance = train.Train(vocab_file_path=vocab_file_path, model_state_dict=model,
+                                            code_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train_SPT.code')
+                                            ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.sbt'),
+                                            nl_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.comment'),batch_size=config.support_batch_size,
+                                            code_valid_path=os.path.join(dataset_dir,f'original/{validating_project}/all_truncated_final.code'),nl_valid_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated_final.comment'),
+                                                ast_valid_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated.sbt')
+                                                ,num_of_data=num_of_data,save_file=False,seed=seed,adam=adam,is_test=True)
+        elif isinstance(model, str):
+            train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model,
+                                        code_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train_SPT.code')
+                                        ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.sbt'),
+                                        nl_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.comment'),batch_size=config.support_batch_size,
+                                        code_valid_path=os.path.join(dataset_dir,f'original/{validating_project}/all_truncated_final.code'),nl_valid_path=os.path.join(dataset_dir,f'original/{validating_project}/all_truncated_final.comment'),
+                                            ast_valid_path=os.path.join(dataset_dir,f'original/{validating_project}/all_truncated.sbt')
+                                            ,num_of_data=num_of_data,save_file=False,seed=seed,adam=adam,is_test=True)
+    else:            
+        if isinstance(model, dict):
+            train_instance = train.Train(vocab_file_path=vocab_file_path, model_state_dict=model,
+                                        code_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.code')
+                                        ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.sbt'),
+                                        nl_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.comment'),batch_size=config.support_batch_size,
+                                        code_valid_path=os.path.join(dataset_dir,f'original/{validating_project}/all_truncated_final.code'),nl_valid_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated_final.comment'),
+                                            ast_valid_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated.sbt')
+                                            ,num_of_data=num_of_data,save_file=False,seed=seed,adam=adam,is_test=True)
+        elif isinstance(model, str):
+            train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model,
+                                        code_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.code')
+                                        ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.sbt'),
+                                        nl_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.comment'),batch_size=config.support_batch_size,
+                                        code_valid_path=os.path.join(dataset_dir,f'original/{validating_project}/all_truncated_final.code'),nl_valid_path=os.path.join(dataset_dir,f'original/{validating_project}/all_truncated_final.comment'),
+                                            ast_valid_path=os.path.join(dataset_dir,f'original/{validating_project}/all_truncated.sbt')
+                                            ,num_of_data=num_of_data,save_file=False,seed=seed,adam=adam,is_test=True)        
     best_model_test_dict=train_instance.run_train()
     print('\nInitializing the test environments......')
     test_instance = eval.Test(best_model_test_dict,
@@ -128,6 +146,7 @@ if __name__ == '__main__':
 
     parser.add_argument('-num','--numtest',
                         type=int, default=5)
+    parser.add_argument('-tr','--trainspt', action='store_true')
     parser.add_argument('-a','--adam', default=True, action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
     num_test=args.numtest
@@ -181,7 +200,7 @@ if __name__ == '__main__':
             for num_fold in range(5):
                 res_dict=None
                 for i in range(num_test):
-                    result=_test(project2path[testing_project],vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=num_data,seed=i,adam=args.adam,num_fold=num_fold,validating_project=project2validate[testing_project])
+                    result=_test(project2path[testing_project],vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=num_data,seed=i,adam=args.adam,num_fold=num_fold,validating_project=project2validate[testing_project],trainspt=args.trainspt)
                     if res_dict==None:
                         res_dict=result
                     else:
