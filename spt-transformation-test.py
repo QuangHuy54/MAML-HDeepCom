@@ -80,9 +80,9 @@ def _test(model,vocab_file_path,testing_project,num_fold,validating_project,num_
     best_model_test_dict=train_instance.run_train()
     print('\nInitializing the test environments......')
     test_instance = eval.Test(best_model_test_dict,
-                              code_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_test.code')
-                                ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_test.sbt'),
-                                nl_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_test.comment'))
+                              code_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_test_SPT.code')
+                                ,ast_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_test_SPT.sbt'),
+                                nl_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_test_SPT.comment'))
     print('Environments built successfully.\n')
     config.logger.info('Size of test dataset: {}'.format(test_instance.dataset_size))
     if config.validate_during_train:
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     # validating_project='dubbo'
     # testing_project='dagger'
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('-t', '--testing', type=list_of_string)
+    parser.add_argument('-t', '--testing', type=list_of_strings)
     parser.add_argument('-n','--numdata',
                         type=list_of_ints, default=[100])
 
