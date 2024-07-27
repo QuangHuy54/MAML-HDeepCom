@@ -25,7 +25,7 @@ def _train(vocab_file_path=None, model_file_path=None):
     print('\nInitializing the training environments......\n')
     train_instance = train.Train(vocab_file_path=None, model_file_path=model_file_path,code_path="../data_RQ3/train/train.token.truncated.final.code",nl_path="../data_RQ3/train/train.token.truncated.final.nl"
                                  ,ast_path="../data_RQ3/train/train.token.truncated.final.ast",code_valid_path="../data_RQ3/valid/valid.token.code",nl_valid_path="../data_RQ3/valid/valid.token.nl"
-                                 ,ast_valid_path="../data_RQ3/valid/valid.token.ast",exact_vocab=True)
+                                 ,ast_valid_path="../data_RQ3/valid/valid.token.ast",exact_vocab=True,adam=False)
     print('Environments built successfully.\n')
     print('Size of train dataset:', train_instance.train_dataset_size)
 
@@ -91,4 +91,4 @@ def _test(model):
 if __name__ == '__main__':
     best_model_dict = _train()
     _test(best_model_dict)
-    #_test('../pretrain_model/pretrain.pt')
+    #_test('model/20240726_134335/model_valid-loss-3.9943_epoch-49_batch--1.pt')

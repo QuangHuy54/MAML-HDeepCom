@@ -85,7 +85,7 @@ save_test_details = True
 
 
 # limitations
-max_code_length = 320
+max_code_length = 313
 max_nl_length = 30
 min_nl_length = 4
 max_decode_steps = 30
@@ -103,7 +103,7 @@ embedding_dim = 256
 hidden_size = 256
 decoder_dropout_rate = 0.5
 teacher_forcing_ratio = 0.5
-batch_size = 32     # 128
+batch_size = 128     # 128
 code_encoder_lr = 0.001
 ast_encoder_lr = 0.001
 reduce_hidden_lr = 0.001

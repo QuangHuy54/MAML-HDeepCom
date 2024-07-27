@@ -6,7 +6,7 @@ import eval
 import argparse
 import torch
 torch.manual_seed(1)
-def _train(testing_project,is_transfer,vocab_file_path=None, model_file_path=None,model_state_dict=None,num_of_data=-1,num_data_baseline=100):
+def _train(testing_project,is_transfer,learning_rate,vocab_file_path=None, model_file_path=None,model_state_dict=None,num_of_data=-1,num_data_baseline=100):
     print('\nStarting the training process......\n')
 
     if vocab_file_path:
@@ -78,6 +78,8 @@ if __name__ == '__main__':
                         type=str, default='flink')
     parser.add_argument('-n','--num',
                         type=int, default=100)
+    parser.add_argument('-lr','--learningrate',
+                        type=float, default=0.001)    
     args = parser.parse_args()
     testing_project=args.test
     best_model_dict = _train(testing_project,is_transfer=False,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path='../pretrain_model/pretrain.pt',num_data_baseline=args.num)

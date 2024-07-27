@@ -9,7 +9,7 @@ import models
 import data
 import utils
 import config
-
+torch.manual_seed(1)
 
 class Eval(object):
 

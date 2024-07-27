@@ -25,7 +25,7 @@ class Train(object):
                                                  nl_valid_path=config.valid_nl_path,batch_size=config.batch_size
                                                  ,num_of_data=-1,save_file=True,exact_vocab=False
                                                  ,meta_baseline=False,code_test_path=None,ast_test_path=None,nl_test_path=None,num_of_data_meta=100,seed=1,adam=True
-                                                 ,training_projects=None,validating_project=None,is_test=False):
+                                                 ,training_projects=None,validating_project=None,is_test=False,lr=config.learning_rate):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -134,10 +134,10 @@ class Train(object):
         # ], betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
         self.adam=adam
         if adam:
-            self.optimizer=Adam(self.model.parameters(),lr=config.learning_rate)
+            self.optimizer=Adam(self.model.parameters(),lr=lr)
         else:
-            self.optimizer=SGD(self.model.parameters(),lr=0.00005)
-        if config.use_lr_decay and self.adam:
+            self.optimizer=SGD(self.model.parameters(),lr=0.5)
+        if config.use_lr_decay:
             self.lr_scheduler = lr_scheduler.StepLR(self.optimizer,
                                                     step_size=config.lr_decay_every,
                                                     gamma=config.lr_decay_rate)
@@ -192,8 +192,7 @@ class Train(object):
         loss.backward()
 
         # address over fit
-        if self.adam:
-            torch.nn.utils.clip_grad_norm_(self.params, 5)
+        torch.nn.utils.clip_grad_norm_(self.params, 5)
 
         self.optimizer.step()
 

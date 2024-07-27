@@ -116,17 +116,13 @@ def get_result(project,projects):
         top_4_result_new=[]
         for idx,key in enumerate(ranking):
             top_4_result.append(key)
-            if idx==3:
-                break
         for idx,key in enumerate(ranking_new):
             top_4_result_new.append(key)
-            if idx==3:
-                break
-        print("Top 4 (not include ast): ",' '.join([x for x in top_4_result]), flush=True)
-        f.write("Top 4 (not include ast): "+' '.join([x for x in top_4_result])+'\n')
+        print("Top average (not include ast): ",' '.join([x for x in top_4_result]), flush=True)
+        f.write("Top average (not include ast): "+' '.join([x for x in top_4_result])+'\n')
         f.flush()
-        print("Top 4: ",' '.join([x for x in top_4_result_new]), flush=True)
-        f.write("Top 4: "+' '.join([x for x in top_4_result_new])+'\n')
+        print("Top average: ",' '.join([x for x in top_4_result_new]), flush=True)
+        f.write("Top average: "+' '.join([x for x in top_4_result_new])+'\n')
         f.flush()  
 
 if __name__ == '__main__':
