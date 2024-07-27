@@ -26,7 +26,7 @@ def tuple_map(fn, t, **kwargs):
 
 class MetaTrain(object):
 
-    def __init__(self, training_projects, validating_project, vocab_file_path=None, model_file_path=None,lr=0.05):
+    def __init__(self, training_projects, validating_project, vocab_file_path=None, model_file_path=None,lr=0.05,save_path=None):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -36,6 +36,7 @@ class MetaTrain(object):
         self.training_projects = training_projects
         self.validating_project = validating_project
         self.vocab_file_path=vocab_file_path
+        self.save_path=save_path
         # dataset
         dataset_dir = "../dataset_v2/original/"
         self.meta_datasets = {}
@@ -299,7 +300,9 @@ class MetaTrain(object):
         """
         if state_dict is None:
             state_dict = self.get_cur_state_dict()
-        if name is None:
+        if self.path is not None:
+            model_save_path = os.path.join('model/', self.path)
+        elif name is None:
             model_save_path = os.path.join(config.model_dir, 'meta_model_{}.pt'.format(utils.get_timestamp()))
         else:
             model_save_path = os.path.join(config.model_dir, name)

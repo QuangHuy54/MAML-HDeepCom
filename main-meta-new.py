@@ -25,7 +25,7 @@ def _train(training_projects,validating_project,lr,vocab_file_path=None, model_f
         print('Model will be created by program.')
 
     print('\nInitializing the training environments......\n')
-    train_instance = metatrain.MetaTrain(training_projects=training_projects,validating_project=validating_project,vocab_file_path=vocab_file_path, model_file_path=model_file_path,lr=lr)
+    train_instance = metatrain.MetaTrain(training_projects=training_projects,validating_project=validating_project,vocab_file_path=vocab_file_path, model_file_path=model_file_path,lr=lr,save_path=f'{training_projects}_meta')
     print('Environments built successfully.\n')
     print('Size of train dataset:', train_instance.meta_datasets_size)
 
@@ -109,26 +109,26 @@ if __name__ == '__main__':
     # validating_project="ahmetcemturan/SFACT"
     # testing_project="kbengine/kbengine"
     project2sources = {
-        'spring-boot': ['spring-framework', 'dubbo', 'spring-security'], 
-        'spring-framework': ['spring-boot', 'spring-security', 'dubbo'], 
-        'spring-security': ['spring-framework', 'spring-boot', 'dubbo'], 
-        'guava': ['flink', 'dubbo', 'kafka'], 
-        'ExoPlayer': ['flink', 'guava', 'spring-framework'], 
-        'dagger': ['dubbo', 'guava', 'spring-framework'], 
-        'kafka': ['flink', 'dubbo', 'spring-framework'], 
-        'dubbo': ['flink', 'spring-framework', 'kafka'], 
-        'flink': ['kafka', 'dubbo', 'spring-framework'], 
+        'spring-boot': ['dubbo', 'spring-security', 'flink', 'kafka', 'guava', 'dagger', 'ExoPlayer'], 
+        'spring-framework': ['spring-security', 'dubbo', 'flink', 'kafka', 'guava', 'ExoPlayer', 'dagger'], 
+        'spring-security': ['spring-boot', 'dubbo' ,'flink','kafka' ,'ExoPlayer','guava' ,'dagger'], 
+        'guava': ['dubbo', 'kafka', 'spring-framework', 'ExoPlayer', 'dagger', 'spring-boot', 'spring-security'], 
+        'ExoPlayer': ['guava', 'spring-framework', 'kafka', 'dubbo', 'spring-boot' ,'spring-security', 'dagger'], 
+        'dagger': ['guava', 'spring-framework', 'flink', 'kafka', 'spring-boot', 'ExoPlayer', 'spring-security'], 
+        'kafka': ['dubbo', 'spring-framework', 'guava', 'spring-boot', 'ExoPlayer', 'spring-security', 'dagger'], 
+        'dubbo': ['spring-framework', 'kafka', 'guava', 'spring-boot', 'dagger', 'spring-security', 'ExoPlayer'], 
+        'flink': ['dubbo', 'spring-framework', 'guava', 'ExoPlayer', 'spring-boot', 'spring-security', 'dagger'], 
     }
     project2validate={        
-        'spring-boot': 'flink', 
-        'spring-framework': 'flink', 
-        'spring-security': 'flink', 
-        'guava': 'spring-framework', 
-        'ExoPlayer': 'kafka', 
-        'dagger': 'flink', 
-        'kafka': 'guava', 
-        'dubbo': 'guava', 
-        'flink': 'guava', }
+        'spring-boot': 'spring-framework', 
+        'spring-framework': 'spring-boot', 
+        'spring-security': 'spring-framework', 
+        'guava': 'flink', 
+        'ExoPlayer': 'flink', 
+        'dagger': 'dubbo', 
+        'kafka': 'flink', 
+        'dubbo': 'flink', 
+        'flink': 'kafka', }
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('-v', '--validate', type=str,default=None)
 

@@ -98,7 +98,7 @@ vocab_min_count = 5
 code_vocab_size = 50000  # 30000
 nl_vocab_size = 30000    # 30000
 
-learning_rate=0.001
+learning_rate=0.002
 embedding_dim = 256
 hidden_size = 256
 decoder_dropout_rate = 0.5
