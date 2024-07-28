@@ -300,8 +300,10 @@ class MetaTrain(object):
         """
         if state_dict is None:
             state_dict = self.get_cur_state_dict()
-        if self.path is not None:
-            model_save_path = os.path.join('model/', self.path)
+        if self.save_path is not None:
+            if not os.path.exists(os.path.join('model/', self.save_path)):
+                os.makedirs(os.path.join('model/', self.save_path))
+            model_save_path = os.path.join(f'model/{self.save_path}',name)
         elif name is None:
             model_save_path = os.path.join(config.model_dir, 'meta_model_{}.pt'.format(utils.get_timestamp()))
         else:

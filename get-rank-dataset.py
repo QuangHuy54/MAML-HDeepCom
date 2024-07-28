@@ -84,15 +84,15 @@ def get_result(project,projects):
         print("Rank code: ",' '.join([x for x in rank_code.keys()]), flush=True)
         # print("Rank rouge: ",' '.join([x for x in rank_rouge.keys()]), flush=True)
         # print("Rank length: ",' '.join([x for x in rank_length.keys()]), flush=True)
-        print("Rank ast: ",' '.join([x for x in rank_ast.keys()]), flush=True)
+        #print("Rank ast: ",' '.join([x for x in rank_ast.keys()]), flush=True)
         f.write("Rank code: "+' '.join([x for x in rank_code.keys()])+'\n')
         f.flush()
         # f.write("Rank rouge: "+' '.join([x for x in rank_rouge.keys()])+'\n')
         # f.flush()
         # f.write("Rank length: "+' '.join([x for x in rank_length.keys()])+'\n')
         # f.flush()
-        f.write("Rank ast: "+' '.join([x for x in rank_ast.keys()])+'\n')
-        f.flush()
+        #f.write("Rank ast: "+' '.join([x for x in rank_ast.keys()])+'\n')
+        #f.flush()
         ranking={}
         ranking_new={}
         for idx,k in enumerate(rank_code):
@@ -104,26 +104,26 @@ def get_result(project,projects):
         # for idx,k in enumerate(rank_length):
         #     ranking[k]=ranking[k]+idx+1
         #    ranking_new[k]=ranking_new[k]+idx+1
-        for idx,k in enumerate(rank_ast):
-            ranking_new[k]=ranking_new[k]+idx+1
+        # for idx,k in enumerate(rank_ast):
+        #     ranking_new[k]=ranking_new[k]+idx+1
         for key in ranking.keys():
             ranking[key]=float(ranking[key])/1
-        for key in ranking_new.keys():
-            ranking_new[key]=float(ranking_new[key])/2
+        # for key in ranking_new.keys():
+        #     ranking_new[key]=float(ranking_new[key])/2
         ranking=dict(sorted(ranking.items(), key=lambda item: item[1]))
-        ranking_new=dict(sorted(ranking_new.items(), key=lambda item: item[1]))
+        #ranking_new=dict(sorted(ranking_new.items(), key=lambda item: item[1]))
         top_4_result=[]
-        top_4_result_new=[]
+        #top_4_result_new=[]
         for idx,key in enumerate(ranking):
             top_4_result.append(key)
-        for idx,key in enumerate(ranking_new):
-            top_4_result_new.append(key)
+        # for idx,key in enumerate(ranking_new):
+        #     top_4_result_new.append(key)
         print("Top average (not include ast): ",' '.join([x for x in top_4_result]), flush=True)
         f.write("Top average (not include ast): "+' '.join([x for x in top_4_result])+'\n')
         f.flush()
-        print("Top average: ",' '.join([x for x in top_4_result_new]), flush=True)
-        f.write("Top average: "+' '.join([x for x in top_4_result_new])+'\n')
-        f.flush()  
+        # print("Top average: ",' '.join([x for x in top_4_result_new]), flush=True)
+        # f.write("Top average: "+' '.join([x for x in top_4_result_new])+'\n')
+        # f.flush()  
 
 if __name__ == '__main__':
     original_projects=['dagger','dubbo','ExoPlayer','flink','guava','kafka','spring-boot','spring-framework','spring-security']

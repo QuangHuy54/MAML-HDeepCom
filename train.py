@@ -25,7 +25,7 @@ class Train(object):
                                                  nl_valid_path=config.valid_nl_path,batch_size=config.batch_size
                                                  ,num_of_data=-1,save_file=True,exact_vocab=False
                                                  ,meta_baseline=False,code_test_path=None,ast_test_path=None,nl_test_path=None,num_of_data_meta=100,seed=1,adam=True
-                                                 ,training_projects=None,validating_project=None,is_test=False,lr=config.learning_rate):
+                                                 ,training_projects=None,validating_project=None,is_test=False,lr=config.learning_rate,save_path=None):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -34,6 +34,7 @@ class Train(object):
         torch.manual_seed(seed)
         # dataset
         self.salf_file=save_file
+        self.save_path=save_path
         if meta_baseline==True:
             train_dataset=[]
             dataset_dir = "../dataset_v2/original/"
@@ -292,6 +293,10 @@ class Train(object):
         """
         if state_dict is None:
             state_dict = self.get_cur_state_dict()
+        if self.save_path is not None:
+            if not os.path.exists(os.path.join('model/', self.save_path)):
+                os.makedirs(os.path.join('model/', self.save_path))
+            model_save_path = os.path.join(f'model/{self.save_path}',name)
         if name is None:
             model_save_path = os.path.join(config.model_dir, 'model_{}.pt'.format(utils.get_timestamp()))
         else:

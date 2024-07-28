@@ -7,7 +7,7 @@ import random
 import train
 import torch
 torch.manual_seed(1)
-def _train(training_projects,validating_project,lr,vocab_file_path=None, model_file_path=None):
+def _train(training_projects,validating_project,testing_project,lr,vocab_file_path=None, model_file_path=None):
     print('\nStarting the training process......\n')
 
     if vocab_file_path:
@@ -25,7 +25,7 @@ def _train(training_projects,validating_project,lr,vocab_file_path=None, model_f
         print('Model will be created by program.')
 
     print('\nInitializing the training environments......\n')
-    train_instance = metatrain.MetaTrain(training_projects=training_projects,validating_project=validating_project,vocab_file_path=vocab_file_path, model_file_path=model_file_path,lr=lr,save_path=f'{training_projects}_meta')
+    train_instance = metatrain.MetaTrain(training_projects=training_projects,validating_project=validating_project,vocab_file_path=vocab_file_path, model_file_path=model_file_path,lr=lr,save_path=f'{testing_project}_meta_3')
     print('Environments built successfully.\n')
     print('Size of train dataset:', train_instance.meta_datasets_size)
 
@@ -109,26 +109,25 @@ if __name__ == '__main__':
     # validating_project="ahmetcemturan/SFACT"
     # testing_project="kbengine/kbengine"
     project2sources = {
-        'spring-boot': ['dubbo', 'spring-security', 'flink', 'kafka', 'guava', 'dagger', 'ExoPlayer'], 
-        'spring-framework': ['spring-security', 'dubbo', 'flink', 'kafka', 'guava', 'ExoPlayer', 'dagger'], 
-        'spring-security': ['spring-boot', 'dubbo' ,'flink','kafka' ,'ExoPlayer','guava' ,'dagger'], 
-        'guava': ['dubbo', 'kafka', 'spring-framework', 'ExoPlayer', 'dagger', 'spring-boot', 'spring-security'], 
-        'ExoPlayer': ['guava', 'spring-framework', 'kafka', 'dubbo', 'spring-boot' ,'spring-security', 'dagger'], 
-        'dagger': ['guava', 'spring-framework', 'flink', 'kafka', 'spring-boot', 'ExoPlayer', 'spring-security'], 
-        'kafka': ['dubbo', 'spring-framework', 'guava', 'spring-boot', 'ExoPlayer', 'spring-security', 'dagger'], 
-        'dubbo': ['spring-framework', 'kafka', 'guava', 'spring-boot', 'dagger', 'spring-security', 'ExoPlayer'], 
-        'flink': ['dubbo', 'spring-framework', 'guava', 'ExoPlayer', 'spring-boot', 'spring-security', 'dagger'], 
+        'spring-boot': ['spring-framework', 'dubbo', 'flink', 'kafka', 'spring-security', 'guava', 'ExoPlayer'], 
+        'spring-framework': ['spring-boot', 'dubbo', 'flink', 'spring-security', 'kafka', 'ExoPlayer', 'guava'], 
+        'spring-security': ['spring-framework', 'spring-boot', 'dubbo', 'kafka', 'flink', 'ExoPlayer' ,'guava'], 
+        'guava': ['flink', 'dubbo', 'spring-framework', 'kafka', 'ExoPlayer', 'spring-boot', 'dagger'], 
+        'ExoPlayer': ['flink', 'spring-framework', 'guava', 'kafka', 'spring-boot', 'dubbo', 'spring-security'], 
+        'kafka': ['flink', 'spring-boot', 'spring-framework', 'dubbo', 'guava', 'ExoPlayer', 'spring-security'], 
+        'dubbo': ['spring-framework', 'spring-boot', 'flink', 'kafka', 'guava', 'spring-security', 'dagger'], 
+        'flink': ['kafka', 'spring-framework', 'dubbo', 'spring-boot', 'guava', 'ExoPlayer', 'spring-security'], 
     }
     project2validate={        
-        'spring-boot': 'spring-framework', 
-        'spring-framework': 'spring-boot', 
-        'spring-security': 'spring-framework', 
-        'guava': 'flink', 
-        'ExoPlayer': 'flink', 
+        'spring-boot': 'dagger', 
+        'spring-framework': 'dagger', 
+        'spring-security': 'dagger', 
+        'guava': 'spring-security', 
+        'ExoPlayer': 'dagger', 
         'dagger': 'dubbo', 
-        'kafka': 'flink', 
-        'dubbo': 'flink', 
-        'flink': 'kafka', }
+        'kafka': 'dagger', 
+        'dubbo': 'ExoPlayer', 
+        'flink': 'dagger', }
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('-v', '--validate', type=str,default=None)
 
@@ -143,8 +142,9 @@ if __name__ == '__main__':
         #training_projects, validating_project, testing_project = split_dataset(projects)
     for project in testing_project:
         config.logger.info(f'validate: {project2validate[project]}, testing: {project}')
-        best_model_dict = _train(training_projects=project2sources[project], \
-                                validating_project=project2validate[project],\
+        best_model_dict = _train(training_projects=project2sources[project][0:3], \
+                                validating_project=project2sources[project][3],\
+                                testing_project=project,\
                                 vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path)
                                 ,model_file_path='../pretrain_model/pretrain.pt',lr=args.learning)
     #_test(best_model_dict,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=100)

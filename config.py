@@ -98,12 +98,12 @@ vocab_min_count = 5
 code_vocab_size = 50000  # 30000
 nl_vocab_size = 30000    # 30000
 
-learning_rate=0.002
+learning_rate=0.001
 embedding_dim = 256
 hidden_size = 256
 decoder_dropout_rate = 0.5
 teacher_forcing_ratio = 0.5
-batch_size = 128     # 128
+batch_size = 32     # 128
 code_encoder_lr = 0.001
 ast_encoder_lr = 0.001
 reduce_hidden_lr = 0.001

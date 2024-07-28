@@ -174,30 +174,31 @@ if __name__ == '__main__':
     # _test(best_model_dict2,testing_project)
     # _test(os.path.join('20240514_083750', 'best_epoch-1_batch-last.pt'))
     total_res={}
-    num_data=50
-    for num_fold in range(5):
-        res_dict=None
-        for i in range(5):
-            best_model_dict2=_train1(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_state_dict=best_model_dict,num_of_data=num_data,seed=i,adam=False,num_fold=num_fold,validating_project=validating_project,learning_rate=args.learningrate)
+    num_datas=[50,100]
+    for num_data in  num_datas:
+        for num_fold in range(5):
+            res_dict=None
+            for i in range(5):
+                best_model_dict2=_train1(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_state_dict=best_model_dict,num_of_data=num_data,seed=i,adam=False,num_fold=num_fold,validating_project=validating_project,learning_rate=args.learningrate)
 
-            result=_test(best_model_dict2,testing_project,num_fold=num_fold)      
-            if res_dict==None:
-                res_dict=result
+                result=_test(best_model_dict2,testing_project,num_fold=num_fold)      
+                if res_dict==None:
+                    res_dict=result
+                else:
+                    for key in res_dict.keys():
+                        res_dict[key]=res_dict[key]+result[key]
+            for key in res_dict.keys():
+                res_dict[key]=res_dict[key]/5
+            if num_data not in total_res:
+                total_res[num_data]=res_dict
             else:
-                for key in res_dict.keys():
-                    res_dict[key]=res_dict[key]+result[key]
-        for key in res_dict.keys():
-            res_dict[key]=res_dict[key]/5
-        if num_data not in total_res:
-            total_res[num_data]=res_dict
-        else:
-            for key in total_res[num_data].keys():
-                total_res[num_data][key]=total_res[num_data][key]+res_dict[key]
-    for key in total_res[num_data].keys():
-        total_res[num_data][key]=total_res[num_data][key]/5     
-    utils.print_test_scores(total_res[num_data],is_average=True)
+                for key in total_res[num_data].keys():
+                    total_res[num_data][key]=total_res[num_data][key]+res_dict[key]
+        for key in total_res[num_data].keys():
+            total_res[num_data][key]=total_res[num_data][key]/5     
+        utils.print_test_scores(total_res[num_data],is_average=True)
     # _test(os.path.join('20240514_083750', 'best_epoch-1_batch-last.pt'))
-
-    print(f'Num data: {num_data}')
-    config.logger.info(f'Num data: {num_data}')
-    utils.print_test_scores(total_res[num_data],is_average=True) 
+    for num_data in num_datas:
+        print(f'Num data: {num_data}')
+        config.logger.info(f'Num data: {num_data}')
+        utils.print_test_scores(total_res[num_data],is_average=True) 
