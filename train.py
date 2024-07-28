@@ -297,7 +297,7 @@ class Train(object):
             if not os.path.exists(os.path.join('model/', self.save_path)):
                 os.makedirs(os.path.join('model/', self.save_path))
             model_save_path = os.path.join(f'model/{self.save_path}',name)
-        if name is None:
+        elif name is None:
             model_save_path = os.path.join(config.model_dir, 'model_{}.pt'.format(utils.get_timestamp()))
         else:
             model_save_path = os.path.join(config.model_dir, name)
