@@ -7,7 +7,7 @@ import argparse
 import torch
 import utils
 torch.manual_seed(1)
-def _train(testing_project,is_transfer,learning_rate,training_projects,validating_project,vocab_file_path=None, model_file_path=None,model_state_dict=None,num_of_data=-1):
+def _train(testing_project,is_transfer,learning_rate,training_projects,validating_project,save_path,vocab_file_path=None, model_file_path=None,model_state_dict=None,num_of_data=-1):
     print('\nStarting the training process......\n')
 
     if vocab_file_path:
@@ -30,14 +30,14 @@ def _train(testing_project,is_transfer,learning_rate,training_projects,validatin
                                     ,ast_path=f'../dataset_v2/original/{testing_project}/train_transfer.sbt',nl_path=f'../dataset_v2/original/{testing_project}/train_transfer.comment'
                                     ,code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
                                     ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
-                                    ,num_of_data=num_of_data,meta_baseline=True,training_projects=training_projects,validating_project=validating_project,lr=learning_rate)
+                                    ,num_of_data=num_of_data,meta_baseline=True,training_projects=training_projects,validating_project=validating_project,lr=learning_rate,save_path=save_path)
     else:
         train_instance = train.Train(vocab_file_path=vocab_file_path,code_path=f'../dataset_v2/original/{testing_project}/train.code'
                                     ,ast_path=f'../dataset_v2/original/{testing_project}/train.sbt',nl_path=f'../dataset_v2/original/{testing_project}/train.comment'
                                     ,code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
                                     ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
                                     ,model_state_dict=model_state_dict
-                                    ,num_of_data=num_of_data,lr=learning_rate)        
+                                    ,num_of_data=num_of_data,lr=learning_rate,save_path=save_path)        
     print('Environments built successfully.\n')
     print('Size of train dataset:', train_instance.train_dataset_size)
 
@@ -163,6 +163,7 @@ if __name__ == '__main__':
                         type=str, default='flink')
     parser.add_argument('-tr','--train',type=list_of_strings,default=None)
     parser.add_argument('-lr','--learningrate',type=float,default=0.001)
+    parser.add_argument('-s','--savepath',type=str,default=None)
     args = parser.parse_args()
     testing_project=args.test
     if args.train==None:
@@ -171,14 +172,15 @@ if __name__ == '__main__':
         training_projects=args.train
 
     validating_project=args.validate if args.validate != None else project2validate[testing_project]  
-    best_model_dict = _train(testing_project,is_transfer=False,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path='../pretrain_model/pretrain.pt',training_projects=training_projects,validating_project=validating_project,learning_rate=args.learningrate)
+    best_model_dict = _train(testing_project,is_transfer=False,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path='../pretrain_model/pretrain.pt',training_projects=training_projects,validating_project=validating_project,learning_rate=args.learningrate
+                             ,save_path=args.savepath)
 
     # best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_state_dict=best_model_dict,num_of_data=100)
 
     # _test(best_model_dict2,testing_project)
     # _test(os.path.join('20240514_083750', 'best_epoch-1_batch-last.pt'))
     total_res={}
-    num_datas=[100]
+    num_datas=[50,100]
     for num_data in  num_datas:
         for num_fold in range(5):
             res_dict=None
