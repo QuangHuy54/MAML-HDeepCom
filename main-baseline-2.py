@@ -84,14 +84,14 @@ def _train1(testing_project,is_transfer,num_fold,validating_project,learning_rat
                                     ,ast_path=f'../dataset_v2/original/{testing_project}/train_transfer.sbt',nl_path=f'../dataset_v2/original/{testing_project}/train_transfer.comment'
                                     ,code_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.code',nl_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.comment',
                                     ast_valid_path=f'../dataset_v2/original/{testing_project}/valid_transfer.sbt'
-                                    ,num_of_data=num_of_data,seed=seed,adam=adam,learning_rate=learning_rate)
+                                    ,num_of_data=num_of_data,seed=seed,adam=adam,lr=learning_rate)
     else:
         train_instance = train.Train(vocab_file_path=vocab_file_path,code_path=f'../dataset_v2/original/{testing_project}/fold_{num_fold}_train.code'
                                     ,ast_path=f'../dataset_v2/original/{testing_project}/fold_{num_fold}_train.sbt',nl_path=f'../dataset_v2/original/{testing_project}/fold_{num_fold}_train.comment'
                                     ,code_valid_path=f'../dataset_v2/original/{validating_project}/all_truncated_final.code',nl_valid_path=f'../dataset_v2/original/{validating_project}/all_truncated_final.comment',
                                     ast_valid_path=f'../dataset_v2/original/{validating_project}/all_truncated.sbt'
                                     ,model_state_dict=model_state_dict,batch_size=config.support_batch_size
-                                    ,num_of_data=num_of_data,model_file_path=model_file_path,save_file=False,seed=seed,adam=adam,is_test=True,learning_rate=learning_rate)        
+                                    ,num_of_data=num_of_data,model_file_path=model_file_path,save_file=False,seed=seed,adam=adam,is_test=True,lr=learning_rate)        
     print('Environments built successfully.\n')
     print('Size of train dataset:', train_instance.train_dataset_size)
 
@@ -115,17 +115,21 @@ def _train1(testing_project,is_transfer,num_fold,validating_project,learning_rat
     del train_instance
     torch.cuda.empty_cache()
     return best_model
-def _test(model,testing_projet):
+
+def _test(model,testing_project,num_fold):
     print('\nInitializing the test environments......')
-    test_instance = eval.Test(model,code_path=f'../dataset_v2/original/{testing_project}/valid.code',ast_path=f'../dataset_v2/original/{testing_project}/valid.sbt',nl_path=f'../dataset_v2/original/{testing_project}/valid.comment')
+    test_instance = eval.Test(model,code_path=f'../dataset_v2/original/{testing_project}/fold_{num_fold}_test.code',ast_path=f'../dataset_v2/original/{testing_project}/fold_{num_fold}_test.sbt',nl_path=f'../dataset_v2/original/{testing_project}/fold_{num_fold}_test.comment')
     print('Environments built successfully.\n')
     print('Size of test dataset:', test_instance.dataset_size)
     config.logger.info('Size of test dataset: {}'.format(test_instance.dataset_size))
 
     config.logger.info('Start Testing.')
     print('\nStart Testing......')
-    test_instance.run_test()
+    result=test_instance.run_test()
     print('Testing is done.')
+    del test_instance
+    torch.cuda.empty_cache()
+    return result
 
 def list_of_strings(arg):
     return arg.split(',')
@@ -174,12 +178,12 @@ if __name__ == '__main__':
     # _test(best_model_dict2,testing_project)
     # _test(os.path.join('20240514_083750', 'best_epoch-1_batch-last.pt'))
     total_res={}
-    num_datas=[50,100]
+    num_datas=[100]
     for num_data in  num_datas:
         for num_fold in range(5):
             res_dict=None
             for i in range(5):
-                best_model_dict2=_train1(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_state_dict=best_model_dict,num_of_data=num_data,seed=i,adam=False,num_fold=num_fold,validating_project=validating_project,learning_rate=args.learningrate)
+                best_model_dict2=_train1(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_state_dict=best_model_dict,num_of_data=num_data,seed=i,num_fold=num_fold,validating_project=validating_project,learning_rate=args.learningrate)
 
                 result=_test(best_model_dict2,testing_project,num_fold=num_fold)      
                 if res_dict==None:
