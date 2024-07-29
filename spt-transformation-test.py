@@ -155,16 +155,15 @@ if __name__ == '__main__':
     # best_model_dict = _train(training_projects=training_projects, \
     #                         validating_project=validating_project,\
     #                         vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path))
-    project2source={
-        'dagger':['dubbo', 'guava', 'spring-framework'],
-        'dubbo':['spring-framework', 'flink', 'spring-boot'],
-        'spring-boot':['spring-framework', 'dubbo', 'spring-security'],
-        'spring-security':['spring-boot', 'spring-framework' ,'dubbo'],
-        'guava':['flink', 'dubbo', 'kafka'],
-        'ExoPlayer':['guava', 'kafka', 'flink'],
-        'kafka':['flink', 'guava', 'spring-framework'],
-        'flink':['kafka', 'spring-framework', 'guava'],
-        'spring-framework':['flink', 'spring-boot', 'spring-security']
+    project2sources = {
+        'spring-boot': ['spring-framework', 'dubbo', 'flink', 'kafka', 'spring-security', 'guava', 'ExoPlayer'], 
+        'spring-framework': ['spring-boot', 'dubbo', 'flink', 'spring-security', 'kafka', 'ExoPlayer', 'guava'], 
+        'spring-security': ['spring-framework', 'spring-boot', 'dubbo', 'kafka', 'flink', 'ExoPlayer' ,'guava'], 
+        'guava': ['flink', 'dubbo', 'spring-framework', 'kafka', 'ExoPlayer', 'spring-boot', 'dagger'], 
+        'ExoPlayer': ['flink', 'spring-framework', 'guava', 'kafka', 'spring-boot', 'dubbo', 'spring-security'], 
+        'kafka': ['flink', 'spring-boot', 'spring-framework', 'dubbo', 'guava', 'ExoPlayer', 'spring-security'], 
+        'dubbo': ['spring-framework', 'spring-boot', 'flink', 'kafka', 'guava', 'spring-security', 'dagger'], 
+        'flink': ['kafka', 'spring-framework', 'dubbo', 'spring-boot', 'guava', 'ExoPlayer', 'spring-security'], 
     }
     project2validate={
         'dagger':'spring-boot',
@@ -178,14 +177,14 @@ if __name__ == '__main__':
         'spring-framework':'kafka',
     }
     project2path={
-        'dubbo':'model/20240723_045827/best_epoch-1.pt',
-        'spring-boot':'model/20240720_120124/best_epoch-0.pt',
-        'spring-security': 'model/20240722_152608/best_epoch-0.pt',
-        'guava': 'model/20240720_081635/best_epoch-0.pt',
-        'ExoPlayer':'model/20240721_143710/meta_model_valid-loss-4.7345_epoch-1_batch-1.pt',
-        'kafka':'model/20240723_045826/best_epoch-2.pt',
-        'flink': 'model/20240722_153427/best_epoch-2.pt',
-        'spring-framework':'model/20240722_141702/meta_model_valid-loss-4.8370_epoch-1_batch-1.pt',        
+        'dubbo':'model/dubbo_meta_3/best_epoch-0.pt',
+        'spring-boot':'model/spring-boot_meta_3/best_epoch-3.pt',
+        'spring-security': 'model/spring-security_meta_3/best_epoch-0.pt',
+        'guava': 'model/guava_meta_3/best_epoch-1.pt',
+        'ExoPlayer':'model/ExoPlayer_meta_3/best_epoch-4.pt',
+        'kafka':'model/kafka_meta_3/best_epoch-1.pt',
+        'flink': 'model/flink_meta_3/best_epoch-4.pt',
+        'spring-framework':'model/spring-framework_meta_3/best_epoch-0.pt',        
     }
     
     if args.adam:
@@ -200,7 +199,7 @@ if __name__ == '__main__':
             for num_fold in range(5):
                 res_dict=None
                 for i in range(num_test):
-                    result=_test(project2path[testing_project],vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=num_data,seed=i,adam=args.adam,num_fold=num_fold,validating_project=project2validate[testing_project],trainspt=args.trainspt)
+                    result=_test(project2path[testing_project],vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=num_data,seed=i,adam=args.adam,num_fold=num_fold,validating_project=project2sources[testing_project][3],trainspt=args.trainspt)
                     if res_dict==None:
                         res_dict=result
                     else:
