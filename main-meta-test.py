@@ -60,6 +60,7 @@ def _train(training_projects,validating_project,vocab_file_path=None, model_file
     return best_model
 
 def _test(model,vocab_file_path,testing_project,num_fold,validating_project,num_of_data=-1,seed=1,adam=True):
+    dataset_dir = "../dataset_v2/"
     if num_of_data==0:
         test_instance = eval.Test(model,
                                 code_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_test.code')
@@ -71,7 +72,6 @@ def _test(model,vocab_file_path,testing_project,num_fold,validating_project,num_
         torch.cuda.empty_cache()
         return result
                 
-    dataset_dir = "../dataset_v2/"
     if isinstance(model, dict):
         train_instance = train.Train(vocab_file_path=vocab_file_path, model_state_dict=model,
                                     code_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.code')
