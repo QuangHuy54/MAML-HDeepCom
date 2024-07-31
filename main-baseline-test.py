@@ -136,8 +136,9 @@ if __name__ == '__main__':
             for num_fold in range(5):
                 res_dict=None
                 for i in range(num_test):
-                    best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path=os.path.join(path,args.specific),num_of_data=num_data,seed=i,adam=args.adam,num_fold=num_fold,validating_project=validating_project)
-
+                    best_model_dict2=os.path.join(path,args.specific)
+                    if num_data!=0:
+                        best_model_dict2=_train(testing_project,is_transfer=True,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),model_file_path=os.path.join(path,args.specific),num_of_data=num_data,seed=i,adam=args.adam,num_fold=num_fold,validating_project=validating_project)
                     result=_test(best_model_dict2,testing_project,num_fold=num_fold)      
                     if res_dict==None:
                         res_dict=result
