@@ -49,7 +49,7 @@ class Train(object):
                                                  ast_path,
                                                  nl_path,num_of_data,seed)
         self.train_dataset_size = len(self.train_dataset)
-        if is_test==True:
+        if is_test==True and num_of_data!=-1:
             self.train_dataloader = DataLoader(dataset=self.train_dataset,
                                             batch_size=batch_size,
                                             shuffle=False,
