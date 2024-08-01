@@ -147,6 +147,7 @@ if __name__ == '__main__':
     parser.add_argument('-num','--numtest',
                         type=int, default=5)
     parser.add_argument('-tr','--trainspt', action='store_true')
+    parser.add_argument('-b','--baseline', action='store_true')
     parser.add_argument('-a','--adam', default=True, action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
     num_test=args.numtest
@@ -186,7 +187,7 @@ if __name__ == '__main__':
         'flink': 'model/flink_meta_3/best_epoch-4.pt',
         'spring-framework':'model/spring-framework_meta_3/best_epoch-0.pt',        
     }
-    
+
     if args.adam:
         print("Using adam")
     full_res={}
@@ -199,7 +200,10 @@ if __name__ == '__main__':
             for num_fold in range(5):
                 res_dict=None
                 for i in range(num_test):
-                    result=_test(project2path[testing_project],vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=num_data,seed=i,adam=args.adam,num_fold=num_fold,validating_project=project2sources[testing_project][3],trainspt=args.trainspt)
+                    if args.baseline:
+                        result=_test(f'model/{testing_project}_base_3/best_epoch-0_batch-last.pt',vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=num_data,seed=i,adam=args.adam,num_fold=num_fold,validating_project=project2sources[testing_project][3],trainspt=args.trainspt)
+                    else:
+                        result=_test(project2path[testing_project],vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=num_data,seed=i,adam=args.adam,num_fold=num_fold,validating_project=project2sources[testing_project][3],trainspt=args.trainspt)
                     if res_dict==None:
                         res_dict=result
                     else:

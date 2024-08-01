@@ -180,7 +180,7 @@ if __name__ == '__main__':
     # _test(best_model_dict2,testing_project)
     # _test(os.path.join('20240514_083750', 'best_epoch-1_batch-last.pt'))
     total_res={}
-    num_datas=[50,100]
+    num_datas=[100]
     for num_data in  num_datas:
         for num_fold in range(5):
             res_dict=None
