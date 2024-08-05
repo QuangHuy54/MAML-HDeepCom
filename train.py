@@ -25,7 +25,7 @@ class Train(object):
                                                  nl_valid_path=config.valid_nl_path,batch_size=config.batch_size
                                                  ,num_of_data=-1,save_file=True,exact_vocab=False
                                                  ,meta_baseline=False,code_test_path=None,ast_test_path=None,nl_test_path=None,num_of_data_meta=100,seed=1,adam=True
-                                                 ,training_projects=None,validating_project=None,is_test=False,lr=config.learning_rate,save_path=None):
+                                                 ,training_projects=None,validating_project=None,is_test=False,lr=config.learning_rate,save_path=None,spt_add_vocab=False):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -83,6 +83,12 @@ class Train(object):
                 self.code_vocab = utils.load_vocab_pk(code_vocab_path)
                 self.ast_vocab = utils.load_vocab_pk(ast_vocab_path)
                 self.nl_vocab = utils.load_vocab_pk(nl_vocab_path)
+                if spt_add_vocab==True:
+                    codes, asts, nls = self.train_dataset.get_dataset()
+                    for code, ast, nl in zip(codes, asts, nls):
+                        self.code_vocab.add_sentence(code)
+                        self.ast_vocab.add_sentence(ast)
+                        self.nl_vocab.add_sentence(nl)                   
         # new vocab
         else:
             self.code_vocab = utils.Vocab('code_vocab')
