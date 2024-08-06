@@ -69,7 +69,7 @@ def _test(model,vocab_file_path,testing_project,num_fold,validating_project,num_
                                             nl_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.comment'),batch_size=config.support_batch_size,
                                             code_valid_path=os.path.join(dataset_dir,f'original/{validating_project}/all_truncated_final.code'),nl_valid_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated_final.comment'),
                                                 ast_valid_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated.sbt')
-                                                ,num_of_data=num_of_data,save_file=False,seed=seed,adam=adam,is_test=True,spt_add_vocab=True)
+                                                ,num_of_data=num_of_data,save_file=False,seed=seed,adam=adam,is_test=True)
         elif isinstance(model, str):
             train_instance = train.Train(vocab_file_path=vocab_file_path, model_file_path=model,
                                         code_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train_SPT.code')
@@ -77,7 +77,7 @@ def _test(model,vocab_file_path,testing_project,num_fold,validating_project,num_
                                         nl_path=os.path.join(dataset_dir,f'original/{testing_project}/fold_{num_fold}_train.comment'),batch_size=config.support_batch_size,
                                         code_valid_path=os.path.join(dataset_dir,f'original/{validating_project}/all_truncated_final.code'),nl_valid_path=os.path.join(dataset_dir,f'original/{validating_project}/all_truncated_final.comment'),
                                             ast_valid_path=os.path.join(dataset_dir,f'original/{validating_project}/all_truncated.sbt')
-                                            ,num_of_data=num_of_data,save_file=False,seed=seed,adam=adam,is_test=True,spt_add_vocab=True)
+                                            ,num_of_data=num_of_data,save_file=False,seed=seed,adam=adam,is_test=True)
     else:            
         if isinstance(model, dict):
             train_instance = train.Train(vocab_file_path=vocab_file_path, model_state_dict=model,
