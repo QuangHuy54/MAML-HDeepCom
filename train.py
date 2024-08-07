@@ -223,7 +223,7 @@ class Train(object):
                 loss = self.train_one_batch(batch, batch_size, criterion)
                 print_loss += loss.item()
                 plot_loss += loss.item()
-
+                config.logger.info(f'Epoch {epoch+1}, batch {index_batch}: {loss}')
                 # print train progress details
                 if index_batch % config.print_every == 0:
                     cur_time = time.time()
