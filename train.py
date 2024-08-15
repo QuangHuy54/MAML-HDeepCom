@@ -25,7 +25,8 @@ class Train(object):
                                                  nl_valid_path=config.valid_nl_path,batch_size=config.batch_size
                                                  ,num_of_data=-1,save_file=True,exact_vocab=False
                                                  ,meta_baseline=False,code_test_path=None,ast_test_path=None,nl_test_path=None,num_of_data_meta=100,seed=1,adam=True
-                                                 ,training_projects=None,validating_project=None,is_test=False,lr=config.learning_rate,save_path=None,spt_add_vocab=False):
+                                                 ,training_projects=None,validating_project=None,is_test=False,lr=config.learning_rate,save_path=None,spt_add_vocab=False
+                                                 ,is_full_baseline=False):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -35,7 +36,20 @@ class Train(object):
         # dataset
         self.salf_file=save_file
         self.save_path=save_path
-        if meta_baseline==True:
+        if is_full_baseline==True:
+            train_dataset=[]
+            dataset_dir = "../dataset_v2/original/"
+            for project in training_projects:
+                train_data= data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/all_truncated_final.code'),
+                                                ast_path=os.path.join(dataset_dir,f'{project}/all_truncated.sbt'),
+                                                nl_path=os.path.join(dataset_dir,f'{project}/all_truncated_final.comment'))
+                train_dataset.append(train_data)
+            fine_tune_data=data.CodePtrDataset(code_path,
+                                                 ast_path,
+                                                 nl_path,num_of_data,seed)
+            train_dataset.append(fine_tune_data)     
+            self.train_dataset=torch.utils.data.ConcatDataset(train_dataset)           
+        elif meta_baseline==True:
             train_dataset=[]
             dataset_dir = "../dataset_v2/original/"
             for project in training_projects:

@@ -26,7 +26,7 @@ def tuple_map(fn, t, **kwargs):
 
 class MetaTrain(object):
 
-    def __init__(self, training_projects, validating_project, vocab_file_path=None, model_file_path=None,lr=0.05,save_path=None):
+    def __init__(self, training_projects, validating_project, vocab_file_path=None, model_file_path=None,lr=0.05,save_path=None,num_of_data=-1):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -40,16 +40,23 @@ class MetaTrain(object):
         # dataset
         dataset_dir = "../dataset_v2/original/"
         self.meta_datasets = {}
-        for project in (training_projects + [validating_project]):
+        for project in training_projects:
             self.meta_datasets[project]={
                 "support": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/all_truncated_final.code'),
                                                 ast_path=os.path.join(dataset_dir,f'{project}/all_truncated.sbt'),
-                                                nl_path=os.path.join(dataset_dir,f'{project}/all_truncated_final.comment')),
+                                                nl_path=os.path.join(dataset_dir,f'{project}/all_truncated_final.comment'),num_of_data=num_of_data),
                 "query": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/valid.code'),
                                                 ast_path=os.path.join(dataset_dir,f'{project}/valid.sbt'),
-                                                nl_path=os.path.join(dataset_dir,f'{project}/valid.comment'))
+                                                nl_path=os.path.join(dataset_dir,f'{project}/valid.comment'),num_of_data=num_of_data)
             }
-        
+        self.meta_datasets[validating_project]={
+            "support": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated_final.code'),
+                                            ast_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated.sbt'),
+                                            nl_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated_final.comment')),
+            "query": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{validating_project}/valid.code'),
+                                            ast_path=os.path.join(dataset_dir,f'{validating_project}/valid.sbt'),
+                                            nl_path=os.path.join(dataset_dir,f'{validating_project}/valid.comment'))
+        }        
         self.meta_datasets_size = sum([(len(dataset['support'])) for dataset in self.meta_datasets.values()])
 
         self.meta_dataloaders = {}
