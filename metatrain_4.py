@@ -159,7 +159,7 @@ class MetaTrain(object):
         self.params=self.maml.parameters()
         self.optimizer=Adam(self.maml.parameters(),lr=config.learning_rate)
         self.eval_instance = eval.Eval(self.get_cur_state_dict(),code_path=f'../dataset_v2/original/{validating_project}/valid_transfer.code',ast_path=f'../dataset_v2/original/{validating_project}/valid_transfer.sbt',nl_path=f'../dataset_v2/original/{validating_project}/valid_transfer.comment')
-
+        s=0
         if config.use_lr_decay:
             self.lr_scheduler = lr_scheduler.StepLR(self.optimizer,
                                                     step_size=config.lr_decay_every,
