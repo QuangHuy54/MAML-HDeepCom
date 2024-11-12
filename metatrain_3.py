@@ -247,7 +247,7 @@ class MetaTrain(object):
             for iteration in pbar: # outer loop
                 #projects=random.sample(self.training_projects, 4)
                 losses = []
-                self.optimizer.zero_grad() 
+                self.optimizer.zero_grad()
                 for project in self.training_projects: # inner loop
                     sup_iter=iter(self.meta_dataloaders[project]['support'])
                     sup_batch = next(sup_iter) 
@@ -274,8 +274,9 @@ class MetaTrain(object):
                     query_loss=self.run_one_batch(task_model,qry_batch,batch_size_qry,self.criterion)
                     query_loss.backward()
                     losses.append(query_loss.item())
-
-                torch.nn.utils.clip_grad_norm_(self.params, 5)
+                for p in self.model.parameters():
+                    p.grad.data.mul_(1. / len(self.training_projects))
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), 5)
                 self.optimizer.step()
                 pbar.set_description('Epoch = %d, iteration = %d, [loss=%.4f, min=%.4f, max=%.4f] \n' % (epoch, idx, np.mean(losses), np.min(losses), np.max(losses)))
                 config.logger.info('epoch: {}/{}, iteration: {}/{}, avg loss: {:.4f}'.format(
