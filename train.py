@@ -6,14 +6,12 @@ import os
 import time
 import threading
 import matplotlib.pyplot as plt
-import torch.nn.functional as F
+
 import utils
 import config
 import data
 import models
 import eval
-from Optim import ScheduledOptim
-import transformer_model
 torch.manual_seed(1)
 
 
@@ -27,8 +25,7 @@ class Train(object):
                                                  nl_valid_path=config.valid_nl_path,batch_size=config.batch_size
                                                  ,num_of_data=-1,save_file=True,exact_vocab=False
                                                  ,meta_baseline=False,code_test_path=None,ast_test_path=None,nl_test_path=None,num_of_data_meta=100,seed=1,adam=True
-                                                 ,training_projects=None,validating_project=None,is_test=False,lr=config.learning_rate,save_path=None,spt_add_vocab=False
-                                                 ,is_full_baseline=False,type='HDeepCom'):
+                                                 ,training_projects=None,validating_project=None,is_test=False,lr=config.learning_rate,save_path=None,spt_add_vocab=False):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -38,20 +35,7 @@ class Train(object):
         # dataset
         self.salf_file=save_file
         self.save_path=save_path
-        if is_full_baseline==True:
-            train_dataset=[]
-            dataset_dir = "../dataset_v2/original/"
-            for project in training_projects:
-                train_data= data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/all_truncated_final.code'),
-                                                ast_path=os.path.join(dataset_dir,f'{project}/all_truncated.sbt'),
-                                                nl_path=os.path.join(dataset_dir,f'{project}/all_truncated_final.comment'))
-                train_dataset.append(train_data)
-            fine_tune_data=data.CodePtrDataset(code_path,
-                                                 ast_path,
-                                                 nl_path,num_of_data,seed)
-            train_dataset.append(fine_tune_data)     
-            self.train_dataset=torch.utils.data.ConcatDataset(train_dataset)           
-        elif meta_baseline==True:
+        if meta_baseline==True:
             train_dataset=[]
             dataset_dir = "../dataset_v2/original/"
             for project in training_projects:
@@ -133,14 +117,9 @@ class Train(object):
         self.code_vocab_size = len(self.code_vocab)
         self.ast_vocab_size = len(self.ast_vocab)
         self.nl_vocab_size = len(self.nl_vocab)
-        self.type=type
+
         # model
-        if type=='Transformer':
-            self.model=transformer_model.TransformerModel(ntoken_code=self.code_vocab_size,ntoken_summary=self.nl_vocab_size,
-                                  model_file_path=model_file_path,
-                                  model_state_dict=model_state_dict)
-        else:
-            self.model = models.Model(code_vocab_size=self.code_vocab_size,
+        self.model = models.Model(code_vocab_size=self.code_vocab_size,
                                   ast_vocab_size=self.ast_vocab_size,
                                   nl_vocab_size=self.nl_vocab_size,
                                   model_file_path=model_file_path,
@@ -162,15 +141,10 @@ class Train(object):
         # ], betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
         self.adam=adam
         if adam:
-            if type=='Transformer':
-                self.optimizer=ScheduledOptim(
-                        Adam(self.model.parameters(), betas=(0.9, 0.98), eps=1e-09),
-                        2.0, 512, 4000)
-            else:
-                self.optimizer=Adam(self.model.parameters(),lr=lr)
+            self.optimizer=Adam(self.model.parameters(),lr=lr)
         else:
             self.optimizer=SGD(self.model.parameters(),lr=0.5)
-        if config.use_lr_decay and type=='HDeepCom':
+        if config.use_lr_decay:
             self.lr_scheduler = lr_scheduler.StepLR(self.optimizer,
                                                     step_size=config.lr_decay_every,
                                                     gamma=config.lr_decay_rate)
@@ -203,26 +177,7 @@ class Train(object):
         """
         self.train_iter()
         return self.best_model
-    def cal_loss(pred, gold, trg_pad_idx, smoothing=False):
-        ''' Calculate cross entropy loss, apply label smoothing if needed. '''
 
-        gold = gold.contiguous().view(-1)
-
-        if smoothing:
-            eps = 0.1
-            n_class = pred.size(1)
-
-            one_hot = torch.zeros_like(pred).scatter(1, gold.view(-1, 1), 1)
-            one_hot = one_hot * (1 - eps) + (1 - one_hot) * eps / (n_class - 1)
-            log_prb = F.log_softmax(pred, dim=1)
-
-            non_pad_mask = gold.ne(trg_pad_idx)
-            loss = -(one_hot * log_prb).sum(dim=1)
-            loss = loss.masked_select(non_pad_mask).sum()  # average later
-        else:
-            loss = F.cross_entropy(pred, gold, ignore_index=trg_pad_idx, reduction='sum')
-        return loss
-    
     def train_one_batch(self, batch, batch_size, criterion):
         """
         train one batch
@@ -234,11 +189,8 @@ class Train(object):
         nl_batch = batch[4]
 
         self.optimizer.zero_grad()
-        if self.type=='Transformer':
-            code_batch, code_seq_lens, ast_batch, ast_seq_lens, nl_batch, nl_seq_lens = batch
-            decoder_outputs = self.model(code_batch) 
-        else:
-            decoder_outputs = self.model(batch, batch_size, self.nl_vocab)     # [T, B, nl_vocab_size]
+
+        decoder_outputs = self.model(batch, batch_size, self.nl_vocab)     # [T, B, nl_vocab_size]
 
         decoder_outputs = decoder_outputs.view(-1, config.nl_vocab_size)
         nl_batch = nl_batch.view(-1)

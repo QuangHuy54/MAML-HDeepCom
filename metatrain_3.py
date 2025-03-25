@@ -26,7 +26,7 @@ def tuple_map(fn, t, **kwargs):
 
 class MetaTrain(object):
 
-    def __init__(self, training_projects, validating_project, vocab_file_path=None, model_file_path=None,lr=0.05,save_path=None,num_of_data=-1):
+    def __init__(self, training_projects, validating_project, vocab_file_path=None, model_file_path=None,lr=0.05,save_path=None):
         """
 
         :param vocab_file_path: tuple of code vocab, ast vocab, nl vocab, if given, build vocab by given path
@@ -40,23 +40,16 @@ class MetaTrain(object):
         # dataset
         dataset_dir = "../dataset_v2/original/"
         self.meta_datasets = {}
-        for project in training_projects:
+        for project in (training_projects + [validating_project]):
             self.meta_datasets[project]={
                 "support": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/all_truncated_final.code'),
                                                 ast_path=os.path.join(dataset_dir,f'{project}/all_truncated.sbt'),
-                                                nl_path=os.path.join(dataset_dir,f'{project}/all_truncated_final.comment'),num_of_data=num_of_data),
+                                                nl_path=os.path.join(dataset_dir,f'{project}/all_truncated_final.comment')),
                 "query": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{project}/valid.code'),
                                                 ast_path=os.path.join(dataset_dir,f'{project}/valid.sbt'),
-                                                nl_path=os.path.join(dataset_dir,f'{project}/valid.comment'),num_of_data=num_of_data)
+                                                nl_path=os.path.join(dataset_dir,f'{project}/valid.comment'))
             }
-        self.meta_datasets[validating_project]={
-            "support": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated_final.code'),
-                                            ast_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated.sbt'),
-                                            nl_path=os.path.join(dataset_dir,f'{validating_project}/all_truncated_final.comment')),
-            "query": data.CodePtrDataset(code_path=os.path.join(dataset_dir,f'{validating_project}/valid.code'),
-                                            ast_path=os.path.join(dataset_dir,f'{validating_project}/valid.sbt'),
-                                            nl_path=os.path.join(dataset_dir,f'{validating_project}/valid.comment'))
-        }        
+        
         self.meta_datasets_size = sum([(len(dataset['support'])) for dataset in self.meta_datasets.values()])
 
         self.meta_dataloaders = {}
@@ -247,7 +240,7 @@ class MetaTrain(object):
             for iteration in pbar: # outer loop
                 #projects=random.sample(self.training_projects, 4)
                 losses = []
-                self.optimizer.zero_grad()
+                self.optimizer.zero_grad() 
                 for project in self.training_projects: # inner loop
                     sup_iter=iter(self.meta_dataloaders[project]['support'])
                     sup_batch = next(sup_iter) 
@@ -274,9 +267,8 @@ class MetaTrain(object):
                     query_loss=self.run_one_batch(task_model,qry_batch,batch_size_qry,self.criterion)
                     query_loss.backward()
                     losses.append(query_loss.item())
-                for p in self.model.parameters():
-                    p.grad.data.mul_(1. / len(self.training_projects))
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), 5)
+
+                torch.nn.utils.clip_grad_norm_(self.params, 5)
                 self.optimizer.step()
                 pbar.set_description('Epoch = %d, iteration = %d, [loss=%.4f, min=%.4f, max=%.4f] \n' % (epoch, idx, np.mean(losses), np.min(losses), np.max(losses)))
                 config.logger.info('epoch: {}/{}, iteration: {}/{}, avg loss: {:.4f}'.format(

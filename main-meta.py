@@ -7,7 +7,7 @@ import random
 import train
 import torch
 torch.manual_seed(1)
-def _train(training_projects,validating_project,lr,vocab_file_path=None, model_file_path=None,num_of_data=-1):
+def _train(training_projects,validating_project,lr,vocab_file_path=None, model_file_path=None):
     print('\nStarting the training process......\n')
 
     if vocab_file_path:
@@ -25,7 +25,7 @@ def _train(training_projects,validating_project,lr,vocab_file_path=None, model_f
         print('Model will be created by program.')
 
     print('\nInitializing the training environments......\n')
-    train_instance = metatrain.MetaTrain(training_projects=training_projects,validating_project=validating_project,vocab_file_path=vocab_file_path, model_file_path=model_file_path,lr=lr,num_of_data=num_of_data)
+    train_instance = metatrain.MetaTrain(training_projects=training_projects,validating_project=validating_project,vocab_file_path=vocab_file_path, model_file_path=model_file_path,lr=lr)
     print('Environments built successfully.\n')
     print('Size of train dataset:', train_instance.meta_datasets_size)
 
@@ -135,7 +135,6 @@ if __name__ == '__main__':
                         type=str, default='flink')
     parser.add_argument('-tr','--train',type=list_of_strings,default=None)
     parser.add_argument('-lr','--learning',type=float,default=0.05)
-    parser.add_argument('-n','--numdata',type=int,default=-1)
     args = parser.parse_args()
     if args.train==None:
         training_projects=project2sources[args.test]
@@ -152,7 +151,7 @@ if __name__ == '__main__':
     best_model_dict = _train(training_projects=training_projects, \
                             validating_project=validating_project,\
                             vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path)
-                            ,model_file_path='../pretrain_model/pretrain.pt',lr=args.learning,num_of_data=args.numdata)
+                            ,model_file_path='../pretrain_model/pretrain.pt',lr=args.learning)
     #_test(best_model_dict,vocab_file_path=(config.code_vocab_path, config.ast_vocab_path, config.nl_vocab_path),testing_project=testing_project,num_of_data=100)
     
     #  _test(os.path.join('20240511_132257', 'model_valid-loss-3.3848_epoch-14_batch--1.pt'))
